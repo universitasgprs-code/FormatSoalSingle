@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EVALUASI</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #f5f5f5; --bg-secondary: #ffffff; --text-primary: #1f2937;
+    --text-secondary: #6b7280; --border-color: #d1d5db; --accent-blue: #3b82f6;
+    --accent-green: #16a34a; --accent-red: #dc2626; --accent-yellow: #f59e0b;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  .dark-mode {
+    --bg-primary: #111827; --bg-secondary: #1f2937; --text-primary: #f9fafb;
+    --text-secondary: #9ca3af; --border-color: #374151;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  }
+  * {
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
+    user-select: none; -webkit-touch-callout: none; box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary); margin: 0; padding: 20px; min-height: 100vh;
+    color: var(--text-primary); transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .container {
+    max-width: 800px; margin: 0 auto; background: var(--bg-secondary);
+    border-radius: 12px; padding: 25px; box-shadow: var(--shadow);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative; z-index: 1;
+  }
+  .fade-in { animation: fadeIn 0.4s ease-in-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  h1 { text-align: center; color: var(--text-primary); margin: 0 0 5px 0; font-size: 22px; }
+  .subtitle { text-align: center; color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; }
+  .dark-mode-toggle {
+    position: fixed; top: 20px; right: 20px; background: var(--bg-secondary);
+    border: 1px solid var(--border-color); border-radius: 50%; width: 45px; height: 45px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    font-size: 20px; box-shadow: var(--shadow); z-index: 900; transition: transform 0.2s;
+  }
+  .dark-mode-toggle:hover { transform: scale(1.1); }
+  .timer {
+    position: sticky; top: 10px; background: var(--accent-red); color: white;
+    padding: 10px; border-radius: 6px; text-align: center; font-size: 16px;
+    font-weight: bold; margin-bottom: 10px; z-index: 100;
+  }
+  .progress-container {
+    width: 100%; background-color: var(--border-color); border-radius: 999px;
+    margin-bottom: 15px; height: 8px; overflow: hidden;
+  }
+  .progress-bar { height: 100%; background-color: var(--accent-green); width: 0%; transition: width 0.4s ease; }
+  .violation-bar {
+    background: #fef3c7; border-left: 3px solid var(--accent-yellow);
+    padding: 10px 15px; border-radius: 4px; margin-bottom: 15px;
+    display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #78350f;
+  }
+  .dark-mode .violation-bar { background: #422006; color: #fde68a; }
+  .violation-count { background: var(--accent-red); color: white; padding: 3px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; }
+  .form-group { margin-bottom: 15px; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: var(--text-primary); }
+  input[type="text"], input[type="number"], input[type="password"], select {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+    border-radius: 6px; font-size: 14px; background: var(--bg-secondary);
+    color: var(--text-primary); transition: border-color 0.2s;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent-blue); }
+  .btn {
+    background: var(--accent-blue); color: white; padding: 10px 20px; border: none;
+    border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
+  .btn-success { background: var(--accent-green); }
+  .btn-success:hover { background: #15803d; }
+  .btn-danger { background: var(--accent-red); }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-warning { background: var(--accent-yellow); color: #000; }
+  .btn-warning:hover { background: #d97706; }
+  .btn-secondary { background: #6b7280; }
+  .btn-secondary:hover { background: #4b5563; }
+  .btn-print { background: #7c3aed; }
+  .btn-print:hover { background: #6d28d9; }
+  .btn-word { background: #2b579a; }
+  .btn-word:hover { background: #1e3f72; }
+  .btn-excel { background: #217346; }
+  .btn-excel:hover { background: #15502f; }
+  .btn-reset {
+    background: var(--accent-red); color: white; padding: 6px 12px; border: none;
+    border-radius: 4px; font-size: 12px; cursor: pointer; float: right; margin-bottom: 10px;
+  }
+  .question {
+    background: var(--bg-primary); border-left: 4px solid var(--accent-blue);
+    padding: 15px; margin-bottom: 15px; border-radius: 6px; transition: background 0.3s;
+  }
+  .question p { font-weight: 600; margin: 0 0 10px 0; font-size: 15px; color: var(--text-primary); }
+  .option {
+    display: block; margin: 6px 0; padding: 10px 12px; background: var(--bg-secondary);
+    border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer;
+    font-size: 14px; transition: all 0.2s; color: var(--text-primary);
+  }
+  .option:hover { background: #eff6ff; border-color: var(--accent-blue); }
+  .dark-mode .option:hover { background: #1e3a8a; }
+  .option input { margin-right: 8px; }
+  .result {
+    text-align: center; padding: 30px; background: #f0fdf4;
+    border-radius: 8px; border: 1px solid #86efac; color: #166534;
+  }
+  .result.violation-result { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  .result h2 { margin-top: 0; font-size: 22px; }
+  .score { font-size: 48px; font-weight: bold; color: #166534; margin: 15px 0; }
+  .result.violation-result .score { color: #991b1b; }
+  .info-box, .warning-box, .locked-box { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+  .info-box { background: #fef3c7; border-left: 3px solid var(--accent-yellow); color: #78350f; }
+  .warning-box { background: #fee2e2; border-left: 3px solid var(--accent-red); color: #7f1d1d; }
+  .locked-box { background: #dbeafe; border-left: 3px solid var(--accent-blue); color: #1e40af; }
+  .dark-mode .info-box { background: #422006; color: #fde68a; }
+  .dark-mode .warning-box { background: #450a0a; color: #fecaca; }
+  .dark-mode .locked-box { background: #1e3a8a; color: #bfdbfe; }
+  .menu-awal { text-align: center; padding: 30px 20px; }
+  .menu-buttons { display: flex; flex-direction: column; gap: 12px; max-width: 400px; margin: 0 auto; }
+  .menu-btn {
+    padding: 15px 20px; border: none; border-radius: 8px; font-size: 15px;
+    font-weight: 600; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 10px; transition: all 0.2s;
+  }
+  .menu-btn-siswa { background: var(--accent-blue); color: white; }
+  .menu-btn-siswa:hover { background: #2563eb; transform: translateY(-2px); }
+  .menu-btn-guru { background: #6b7280; color: white; }
+  .menu-btn-guru:hover { background: #4b5563; transform: translateY(-2px); }
+  .menu-btn-warning { background: var(--accent-yellow); color: #000; }
+  .menu-btn-warning:hover { background: #d97706; transform: translateY(-2px); }
+  .dashboard-guru { display: none; }
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;
+    padding: 20px; border-radius: 8px; margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sync-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-radius: 8px; margin-bottom: 15px;
+    font-size: 13px; font-weight: 500; border: 1px solid transparent;
+    transition: all 0.3s ease; flex-wrap: wrap; gap: 10px;
+  }
+  .sync-banner-info { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+  .sync-banner-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .sync-banner-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+  .sync-banner-offline { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .dark-mode .sync-banner-info { background: #172554; color: #93c5fd; border-color: #1e3a8a; }
+  .dark-mode .sync-banner-success { background: #064e3b; color: #6ee7b7; border-color: #047857; }
+  .dark-mode .sync-banner-warning { background: #451a03; color: #fcd34d; border-color: #78350f; }
+  .dark-mode .sync-banner-offline { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
+  .sync-pulse { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+  .sync-pulse-green { background: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulseGreen 2s infinite; }
+  .sync-pulse-yellow { background: #f59e0b; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); animation: pulseYellow 2s infinite; }
+  .sync-pulse-red { background: #ef4444; }
+  @keyframes pulseGreen {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+  @keyframes pulseYellow {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  }
+  .panel {
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 18px; margin-bottom: 15px; transition: background 0.3s;
+  }
+  .panel h3 { margin: 0 0 12px 0; font-size: 16px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .panel-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .panel-row input[type="number"] { width: 100px; }
+  .panel-row select { width: auto; min-width: 150px; }
+  .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+  .status-on { background: #dcfce7; color: #166534; }
+  .status-off { background: #fee2e2; color: #991b1b; }
+  .dark-mode .status-on { background: #064e3b; color: #6ee7b7; }
+  .dark-mode .status-off { background: #450a0a; color: #fca5a5; }
+  .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+  .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+  input:checked + .slider { background-color: var(--accent-green); }
+  input:checked + .slider:before { transform: translateX(24px); }
+  .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
+  .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .preview-box { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; font-size: 12px; color: var(--text-primary); }
+  .preview-item { padding: 6px; border-bottom: 1px solid var(--border-color); }
+  .preview-item:last-child { border-bottom: none; }
+  .info-small { font-size: 12px; color: var(--text-secondary); margin-top: 8px; font-style: italic; }
+  .alert-success, .alert-error, .alert-info { padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; }
+  .alert-success { background: #dcfce7; border-left: 3px solid var(--accent-green); color: #166534; }
+  .alert-error { background: #fee2e2; border-left: 3px solid var(--accent-red); color: #991b1b; }
+  .alert-info { background: #dbeafe; border-left: 3px solid var(--accent-blue); color: #1e40af; }
+  .dark-mode .alert-success { background: #064e3b; color: #6ee7b7; }
+  .dark-mode .alert-error { background: #450a0a; color: #fca5a5; }
+  .dark-mode .alert-info { background: #1e3a8a; color: #bfdbfe; }
+  .input-judul { font-size: 15px !important; font-weight: 600 !important; padding: 10px 12px !important; }
+  .preview-judul { background: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: 6px; padding: 15px; margin-top: 10px; text-align: center; }
+  .preview-judul h3 { color: var(--text-primary); margin: 0 0 5px 0; font-size: 18px; }
+  .preview-judul p { color: var(--text-secondary); margin: 0; font-size: 13px; font-style: italic; }
+  .password-wrapper { position: relative; }
+  .password-wrapper input { padding-right: 40px; }
+  .password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-secondary); padding: 4px 8px; }
+  .password-toggle:hover { color: var(--accent-blue); }
+  .current-password-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px; padding: 10px; margin-bottom: 12px; font-size: 13px; color: #1e40af; display: flex; justify-content: space-between; align-items: center; }
+  .dark-mode .current-password-box { background: #1e3a8a; border-color: #1e40af; color: #bfdbfe; }
+  .version-badge { display: inline-block; background: #1e40af; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 8px; }
+  .panel-highlight { border-left: 4px solid var(--accent-green); background: linear-gradient(to right, #f0fdf4 0%, var(--bg-primary) 100%); }
+  .dark-mode .panel-highlight { background: linear-gradient(to right, #064e3b 0%, var(--bg-primary) 100%); }
+  .panel-print { border-left: 4px solid #7c3aed; background: linear-gradient(to right, #f5f3ff 0%, var(--bg-primary) 100%); }
+  .dark-mode .panel-print { background: linear-gradient(to right, #2e1065 0%, var(--bg-primary) 100%); }
+  .step-list { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; padding: 12px 12px 12px 30px; margin: 10px 0; font-size: 13px; color: var(--text-primary); }
+  .step-list li { margin: 6px 0; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+  .modal-content { background: var(--bg-secondary); padding: 25px; border-radius: 12px; max-width: 380px; width: 90%; box-shadow: var(--shadow); color: var(--text-primary); }
+  .modal-content h3 { margin-top: 0; }
+  .modal input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); }
+  .btn-cancel { background: #6b7280; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; margin-left: 8px; font-weight: 600; }
+  #violationOverlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(220, 38, 38, 0.95); z-index: 9999;
+    justify-content: center; align-items: center; flex-direction: column; color: white; text-align: center;
+  }
+  #violationOverlay h1 { color: white; font-size: 36px; margin: 0; }
+  #violationOverlay .counter { font-size: 70px; font-weight: bold; margin: 15px 0; background: white; color: var(--accent-red); width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+  #violationOverlay p { font-size: 18px; margin: 5px 0; }
+  .violation-list { text-align: left; background: var(--bg-secondary); color: var(--text-primary); padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #fca5a5; font-size: 13px; }
+  .violation-list h3 { color: #991b1b; margin-top: 0; font-size: 15px; }
+  .violation-list ul { padding-left: 18px; margin: 0; }
+  .violation-list li { margin: 4px 0; }
+  .forensik-panel { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-top: 15px; text-align: left; }
+  .forensik-panel h3 { color: var(--accent-blue); margin: 0 0 10px 0; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+  .forensik-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+  .forensik-item { background: var(--bg-secondary); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); }
+  .forensik-item .label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+  .forensik-item .value { font-size: 18px; font-weight: bold; color: var(--text-primary); margin-top: 2px; }
+  .forensik-item.warning { border-color: var(--accent-yellow); background: #fef3c7; }
+  .dark-mode .forensik-item.warning { background: #422006; }
+  .forensik-item.warning .value { color: #92400e; }
+  .dark-mode .forensik-item.warning .value { color: #fde68a; }
+  .forensik-item.danger { border-color: var(--accent-red); background: #fee2e2; }
+  .dark-mode .forensik-item.danger { background: #450a0a; }
+  .forensik-item.danger .value { color: #991b1b; }
+  .dark-mode .forensik-item.danger .value { color: #fca5a5; }
+  .forensik-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+  .forensik-table th { background: var(--bg-secondary); padding: 6px; text-align: left; border: 1px solid var(--border-color); font-weight: 600; }
+  .forensik-table td { padding: 5px 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); }
+  .forensik-table tr.suspicious td { background: #fef3c7; color: #92400e; font-weight: 600; }
+  .dark-mode .forensik-table tr.suspicious td { background: #422006; color: #fde68a; }
+  #watermarkOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; overflow: hidden; }
+  #watermarkOverlay .wm-text { position: absolute; font-size: 18px; font-weight: bold; color: rgba(0, 0, 0, 0.04); white-space: nowrap; transform: rotate(-25deg); user-select: none; }
+  .dark-mode #watermarkOverlay .wm-text { color: rgba(255, 255, 255, 0.04); }
+  .tips-list { margin: 5px 0 0 0; padding-left: 20px; font-size: 12px; }
+  .tips-list li { margin: 3px 0; }
+  .print-preview-container { background: #e5e7eb; padding: 20px; border-radius: 6px; margin-top: 15px; max-height: 500px; overflow-y: auto; }
+  .dark-mode .print-preview-container { background: #1f2937; }
+  .print-preview-page {
+    background: white; color: black; padding: 40px; margin: 0 auto 20px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); max-width: 100%;
+    font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1;
+  }
+  .print-preview-page h2 { text-align: center; margin: 0 0 5px 0; font-size: 14pt; text-transform: uppercase; }
+  .print-preview-page h3 { text-align: center; margin: 0 0 15px 0; font-size: 12pt; font-weight: normal; }
+  .print-preview-page .soal-item { margin-bottom: 15px; page-break-inside: avoid; }
+  .print-preview-page .soal-item > p { margin: 0 0 6px 0; font-weight: 600; text-align: justify; }
+  .print-preview-page .opsi { margin-left: 20px; }
+  .print-preview-page .opsi-item { display: flex; margin-bottom: 4px; align-items: baseline; }
+  .print-preview-page .opsi-huruf { width: 25px; font-weight: bold; flex-shrink: 0; }
+  .print-preview-page .opsi-teks { flex: 1; word-wrap: break-word; text-align: justify; }
+  .print-preview-page .kunci-jawaban { margin-top: 30px; border-top: 2px solid #000; padding-top: 15px; }
+  .print-preview-page .kunci-jawaban h3 { text-align: left; font-weight: bold; }
+</style>
+</head>
+<body oncontextmenu="return false;">
+
+<button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Mode Gelap">🌙</button>
+
+<div id="violationOverlay" style="display: none;">
+  <h1>⚠️ PELANGGARAN TERDETEKSI</h1>
+  <div class="counter" id="overlayCounter">1</div>
+  <p id="overlayMessage">Aktivitas mencurigakan terdeteksi!</p>
+  <p>Pelanggaran: <span id="overlayCount">1</span> / <span id="overlayMax">5</span></p>
+  <p id="overlayInfoText" style="font-size:14px; opacity:0.9;">5 pelanggaran = ujian otomatis dikumpulkan</p>
+</div>
+
+<div id="watermarkOverlay"></div>
+
+<div class="container fade-in">
+  <h1 id="judulUtama">EVALUASI</h1>
+  <p class="subtitle" id="subJudul">MATERI BAB</p>
+
+  <!-- Status Koneksi Global (Offline / Online Auto-Sync) -->
+  <div id="globalNetworkBanner" class="sync-banner sync-banner-success" style="display:none; margin-bottom:15px;">
+    <span id="globalNetworkStatusText"></span>
+  </div>
+
+  <div id="menuAwal" class="menu-awal" style="display: block;">
+    <h2 id="menuAwalTitle">Selamat Datang</h2>
+    <p id="menuAwalSubtitle">Silakan pilih peran Anda untuk melanjutkan</p>
+    <div class="menu-buttons">
+      <button class="menu-btn menu-btn-siswa" onclick="bukaFormSiswa()">📝 Mulai Ujian (Siswa)</button>
+      <button class="menu-btn menu-btn-guru" onclick="bukaLoginGuru()">🔑 Login Guru (Kelola Ujian)</button>
+      <button class="menu-btn menu-btn-warning" id="btnResetMenuAwal" onclick="resetSoalMenuAwal()" style="display:none;">🔄 Reset Latihan (Siswa)</button>
+    </div>
+  </div>
+
+  <div id="identityForm" style="display:none;" class="fade-in">
+    <div id="identityNetworkNotice" class="sync-banner sync-banner-offline" style="display:none;">
+      <span>📡 <strong>MODE OFFLINE:</strong> Anda tetap bisa mulai &amp; mengerjakan ujian. Data pengerjaan akan tersimpan otomatis di perangkat dan terkirim ke spreadsheet saat online.</span>
+    </div>
+    <div class="info-box" id="infoWaktu">⏰ Waktu: <strong>35 menit</strong> | Soal: <strong>Semua</strong></div>
+    <div class="warning-box">🚨 <strong>PERINGATAN:</strong> Ujian berjalan dalam mode FULLSCREEN. Dilarang screenshot, pindah tab, atau keluar layar. <strong><span id="maxPelanggaranInfo">6</span> pelanggaran = auto-submit.</strong><br>📸 Layar akan ditandai dengan <strong>watermark nama Anda</strong> sebagai bukti digital.</div>
+    <div class="form-group"><label>Nama Lengkap:</label><input type="text" id="nama" placeholder="Masukkan nama lengkap"></div>
+    <div class="form-group"><label>Nomor Absen:</label><input type="text" id="nomor" placeholder="Masukkan nomor absen"></div>
+    <div class="form-group"><label>Kelas:</label><input type="text" id="kelas" placeholder="Contoh: XI DKV 1"></div>
+    <div class="form-group"><label>Token Ujian:</label><input type="text" id="tokenUjian" placeholder="Masukkan token dari guru"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-success" onclick="mulaiUjian()" style="flex:1;">▶ Mulai Ujian (Fullscreen)</button>
+      <button class="btn btn-secondary" onclick="kembaliKeMenu()">← Kembali</button>
+    </div>
+  </div>
+
+  <div id="dashboardGuru" class="dashboard-guru fade-in" style="display: none;">
+    <div class="dashboard-header">
+      <div><h2>🎓 Dashboard Guru <span class="version-badge" id="versionBadge">v5.11</span></h2><p>Kelola pengaturan ujian di sini</p></div>
+      <button class="btn btn-danger" onclick="keluarDashboard()" style="padding:8px 15px; font-size:13px;">🚪 Keluar</button>
+    </div>
+
+    <div id="dashboardSyncBanner" class="sync-banner sync-banner-info">
+      <div id="dashboardSyncStatusText"><span class="sync-pulse sync-pulse-yellow"></span><span>⏳ Sedang menyinkronkan pengaturan ke Google Spreadsheet...</span></div>
+      <div>
+        <button class="btn btn-secondary" onclick="syncDashboardGuruManual()" style="padding:4px 10px; font-size:12px; white-space:nowrap;">🔄 Sinkron Sekarang</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3> 1. Edit Judul &amp; Token Ujian</h3>
+      <div class="form-group"><label>Judul Utama:</label><input type="text" id="inputJudul" class="input-judul" placeholder="Contoh: Evaluasi PKK DKV BAB 1"></div>
+      <div class="form-group"><label>Subjudul:</label><input type="text" id="inputSubJudul" class="input-judul" placeholder="Contoh: Kewirausahaan..."></div>
+      <div class="form-group"><label>Token Ujian (Kode Akses):</label><input type="text" id="inputToken" class="input-judul" placeholder="Contoh: DKV2024"></div>
+      <div class="panel-row">
+        <button class="btn btn-success" onclick="simpanJudul()" style="padding:8px 15px; font-size:13px;">💾 Simpan</button>
+        <button class="btn btn-secondary" onclick="resetJudul()" style="padding:8px 15px; font-size:13px;">🔄 Reset Default</button>
+      </div>
+      <div class="preview-judul">
+        <h3 id="previewJudulUtama">EVALUASI</h3>
+        <p id="previewSubJudul">MATERI BAB</p>
+        <p style="margin-top:8px; font-size:12px; color:var(--accent-blue);">🔑 Token: <strong id="previewToken">2027</strong></p>
+      </div>
+      <div id="statusJudul"></div>
+    </div>
+
+    <div class="panel">
+      <h3>🔑 2. Ubah Password Guru</h3>
+      <div class="current-password-box">
+        <span>🔐 Password saat ini: <strong id="displayPassword">••••••••</strong></span>
+        <button class="btn btn-secondary" onclick="toggleDisplayPassword()" style="padding:4px 10px; font-size:12px;" id="btnTogglePwd">👁️ Lihat</button>
+      </div>
+      <div class="form-group"><label>Password Lama:</label><div class="password-wrapper"><input type="password" id="pwdLama" placeholder="Masukkan password lama"><button type="button" class="password-toggle" onclick="togglePwd('pwdLama')">👁️</button></div></div>
+      <div class="form-group"><label>Password Baru:</label><div class="password-wrapper"><input type="password" id="pwdBaru" placeholder="Minimal 4 karakter" oninput="checkPasswordStrength()"><button type="button" class="password-toggle" onclick="togglePwd('pwdBaru')">👁️</button></div><div id="pwdStrength" style="font-size:12px; margin-top:5px; font-weight:600;"></div></div>
+      <div class="form-group"><label>Konfirmasi Password Baru:</label><div class="password-wrapper"><input type="password" id="pwdKonfirmasi" placeholder="Ulangi password baru"><button type="button" class="password-toggle" onclick="togglePwd('pwdKonfirmasi')">👁️</button></div></div>
+      <div class="panel-row">
+        <button class="btn btn-success" onclick="ubahPassword()" style="padding:8px 15px; font-size:13px;">💾 Ubah Password</button>
+        <button class="btn btn-secondary" onclick="resetPasswordDefault()" style="padding:8px 15px; font-size:13px;">🔄 Reset Default</button>
+      </div>
+      <div id="statusPassword"></div>
+    </div>
+
+    <div class="panel">
+      <h3>⏰ 3. Atur Waktu &amp; Jumlah Soal</h3>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <label style="margin:0;">Durasi:</label>
+        <input type="number" id="inputWaktu" min="1" max="180" value="30"> <span>menit</span>
+        <button class="btn btn-success" onclick="simpanWaktu()" style="padding:8px 15px; font-size:13px;">💾 Simpan Waktu</button>
+      </div>
+      <div class="panel-row">
+        <label style="margin:0;">Jumlah Soal Ditampilkan:</label>
+        <input type="number" id="inputJumlahSoal" min="0" value="0"> <span>(0 = Semua soal)</span>
+        <button class="btn btn-success" onclick="simpanJumlahSoal()" style="padding:8px 15px; font-size:13px;">💾 Simpan</button>
+      </div>
+      <p class="info-small">⚠️ Jika "Jumlah Soal" kurang dari total bank soal, sistem akan mengacak dan mengambil subset soal tersebut (Bank Soal Acak).</p>
+      <div id="statusWaktu"></div>
+    </div>
+
+    <div class="panel">
+      <h3>📊 4. Sinkron Soal dari Excel</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-secondary);">Format: Kolom A=Pertanyaan, B-F=Opsi A-E, G=Jawaban Benar (A/B/C/D/E)</p>
+      <div class="panel-row">
+        <div class="file-input-wrapper">
+          <button class="btn btn-warning">📁 Pilih File Excel</button>
+          <input type="file" id="fileExcel" accept=".xlsx,.xls" onchange="importExcel(event)">
+        </div>
+        <button class="btn btn-secondary" onclick="downloadTemplate()" style="padding:8px 15px; font-size:13px;">📥 Template</button>
+        <button class="btn btn-danger" onclick="resetSoalDefault()" style="padding:8px 15px; font-size:13px;">🔄 Reset Default</button>
+      </div>
+      <div id="statusImport"></div>
+      <div id="previewSoal"><div class="preview-box"><strong>Preview 1 soal pertama:</strong><br><div class="preview-item"><strong>1.</strong> Teknologi informasi dan komunikasi dapat diartikan sebagai s... <em>[Jawaban: A]</em></div></div></div>
+      <p class="info-small">📌 Total soal dalam bank: <strong id="jumlahSoalSaatIni">1</strong></p>
+    </div>
+
+    <div class="panel">
+      <h3>🔀 5. Pengaturan Pengacakan &amp; Reset Ujian</h3>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <label style="margin:0;">Acak Urutan Soal:</label>
+        <label class="toggle-switch"><input type="checkbox" id="toggleAcak" onchange="simpanAcak()"><span class="slider"></span></label>
+        <span id="statusAcak" class="status-badge status-on">AKTIF</span>
+      </div>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <label style="margin:0;">Acak Opsi Jawaban:</label>
+        <label class="toggle-switch"><input type="checkbox" id="toggleAcakOpsi" onchange="simpanAcakOpsi()"><span class="slider"></span></label>
+        <span id="statusAcakOpsi" class="status-badge status-on">AKTIF</span>
+      </div>
+      <div class="panel-row">
+        <label style="margin:0;">Status Reset (Tampilan Awal):</label>
+        <label class="toggle-switch"><input type="checkbox" id="toggleEnableReset" onchange="simpanEnableReset()"><span class="slider"></span></label>
+        <span id="statusEnableReset" class="status-badge status-off">NONAKTIF (Mode UJIAN)</span>
+      </div>
+      <p class="info-small">
+        • Acak Soal: Mengacak urutan soal.<br>
+        • Acak Opsi: Mengacak posisi A/B/C/D/E per soal.<br>
+        • Status Reset: <strong>AKTIF</strong> jika buat latihan soal (siswa bisa reset sendiri di halaman awal), <strong>NONAKTIF</strong> jika buat UJIAN resmi.
+      </p>
+    </div>
+
+    <div class="panel">
+      <h3>🎯 6. Pengaturan Score &amp; KKM Nilai</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-secondary);">Atur skala nilai maksimal, standar kelulusan (KKM), dan tampilan hasil nilai untuk siswa.</p>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <label style="margin:0;">Nilai Maksimal (Skala):</label>
+        <input type="number" id="inputNilaiMaksimal" min="10" max="1000" value="100">
+        <label style="margin:0; margin-left:15px;">Nilai KKM:</label>
+        <input type="number" id="inputNilaiKKM" min="0" max="1000" value="75">
+      </div>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <label style="margin:0;">Tampilkan Nilai ke Siswa:</label>
+        <select id="selectTampilNilai" style="width:auto; min-width:120px;">
+          <option value="true" selected="">Ya (Tampilkan)</option>
+          <option value="false">Tidak (Sembunyikan)</option>
+        </select>
+      </div>
+      <div class="panel-row">
+        <button class="btn btn-success" onclick="simpanPengaturanNilai()" style="padding:8px 15px; font-size:13px;">💾 Simpan Pengaturan Score</button>
+        <button class="btn btn-secondary" onclick="resetPengaturanNilai()" style="padding:8px 15px; font-size:13px;">🔄 Reset Default</button>
+      </div>
+      <div id="statusPengaturanNilai"></div>
+    </div>
+
+    <div class="panel">
+      <h3>⚠️ 7. Atur Batas Pelanggaran</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-secondary);">Tentukan jumlah maksimal pelanggaran sebelum ujian otomatis dikumpulkan.</p>
+      <div class="panel-row">
+        <label style="margin:0;">Batas Pelanggaran:</label>
+        <input type="number" id="inputMaxPelanggaran" min="1" max="20" value="5"> <span>kali pelanggaran</span>
+        <button class="btn btn-success" onclick="simpanMaxPelanggaran()" style="padding:8px 15px; font-size:13px;">💾 Simpan</button>
+        <button class="btn btn-secondary" onclick="resetMaxPelanggaran()" style="padding:8px 15px; font-size:13px;">🔄 Reset (5)</button>
+      </div>
+      <div class="alert-info" style="margin-top:10px;">
+        💡 <strong>Tips Pengaturan:</strong>
+        <ul class="tips-list">
+          <li><strong>Batas rendah (1-3):</strong> Sangat ketat, cocok untuk ujian penting/ujian akhir</li>
+          <li><strong>Batas sedang (4-6):</strong> Standar, cocok untuk ujian harian (default: 5)</li>
+          <li><strong>Batas tinggi (7+):</strong> Longgar, cocok untuk latihan/tryout</li>
+        </ul>
+      </div>
+      <div id="statusMaxPelanggaran"></div>
+    </div>
+
+    <div class="panel panel-print">
+      <h3>🖨️ 8. Cetak &amp; Ekspor Soal Ujian</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-secondary);">Cetak atau ekspor soal ujian ke berbagai format file (PDF, Word, Excel) dengan pengaturan format sesuai kebutuhan.</p>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <div class="form-group" style="flex:1; min-width:180px; margin-bottom:0;"><label>🔤 Jenis Font:</label>
+          <select id="cetakFont">
+            <option value="'Times New Roman', serif" selected="">Times New Roman</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Calibri', sans-serif">Calibri</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Tahoma, sans-serif">Tahoma</option>
+            <option value="'Book Antiqua', serif">Book Antiqua</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1; min-width:150px; margin-bottom:0;"><label>📏 Ukuran Kertas:</label>
+          <select id="cetakKertas">
+            <option value="F4" selected="">F4 (21.5 × 33 cm)</option>
+            <option value="A4">A4 (21 × 29.7 cm)</option>
+            <option value="Letter">Letter (21.59 × 27.94 cm)</option>
+            <option value="Legal">Legal (21.59 × 35.56 cm)</option>
+            <option value="A5">A5 (14.8 × 21 cm)</option>
+            <option value="B5">B5 (17.6 × 25 cm)</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <div class="form-group" style="flex:1; min-width:120px; margin-bottom:0;"><label>🔢 Ukuran Font:</label>
+          <select id="cetakUkuranFont">
+            <option value="10">10 pt</option><option value="11">11 pt</option>
+            <option value="12" selected="">12 pt</option><option value="13">13 pt</option>
+            <option value="14">14 pt</option><option value="16">16 pt</option><option value="18">18 pt</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1; min-width:120px; margin-bottom:0;"><label>📐 Spasi Baris:</label>
+          <select id="cetakSpasi">
+            <option value="1" selected="">1 (Single)</option><option value="1.15">1.15</option>
+            <option value="1.5">1.5</option><option value="2">2 (Double)</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;"><label>⬆️ Margin Atas (cm):</label><input type="number" id="cetakMarginAtas" min="0.5" max="5" step="0.1" value="1.5"></div>
+        <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;"><label>⬇️ Margin Bawah (cm):</label><input type="number" id="cetakMarginBawah" min="0.5" max="5" step="0.1" value="1.5"></div>
+        <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;"><label>️ Margin Kiri (cm):</label><input type="number" id="cetakMarginKiri" min="0.5" max="5" step="0.1" value="1.5"></div>
+        <div class="form-group" style="flex:1; min-width:100px; margin-bottom:0;"><label>➡️ Margin Kanan (cm):</label><input type="number" id="cetakMarginKanan" min="0.5" max="5" step="0.1" value="1.5"></div>
+      </div>
+      <div class="panel-row" style="margin-bottom:10px;">
+        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Tampilkan Kunci Jawaban:</label>
+          <select id="cetakKunci"><option value="akhir" selected="">Di halaman terakhir</option><option value="tidak">Tidak ditampilkan</option></select>
+        </div>
+        <div class="form-group" style="flex:1; margin-bottom:0;"><label>Acak Soal Saat Cetak/Ekspor:</label>
+          <select id="cetakAcak"><option value="tidak" selected="">Tidak (sesuai urutan)</option><option value="ya">Ya (acak urutan)</option></select>
+        </div>
+      </div>
+      <div class="panel-row" style="margin-top:15px; flex-wrap: wrap; gap: 8px;">
+        <button class="btn btn-secondary" onclick="previewCetak()" style="padding:10px 20px; font-size:14px;">️ Preview</button>
+        <button class="btn btn-print" onclick="cetakSoal()" style="padding:10px 20px; font-size:14px;">🖨️ Cetak / Simpan PDF</button>
+        <button class="btn btn-word" onclick="exportToWord()" style="padding:10px 20px; font-size:14px;">📄 Export Word (.rtf)</button>
+        <button class="btn btn-excel" onclick="exportToExcel()" style="padding:10px 20px; font-size:14px;">📊 Export Excel (.xlsx)</button>
+        <button class="btn btn-warning" onclick="resetPengaturanCetak()" style="padding:10px 20px; font-size:14px;">🔄 Reset Default</button>
+      </div>
+      <div id="previewCetakArea"><div class="print-preview-container"><div class="print-preview-page" style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1; padding: 1.5cm 1.5cm 1.5cm 1.5cm; width: 21.5cm; min-height: 9.9cm;"><div style="text-align:center; margin-bottom:15px;"><h2 style="margin:0 0 5px 0; font-size:14pt; text-transform:uppercase;">EVALUASI</h2><h3 style="margin:0 0 10px 0; font-size:13pt; font-weight:normal;">MATERI BAB</h3><div style="font-size:12pt;">Hari/Tanggal: Minggu, 1 November 2026</div></div><div style="margin-bottom:15px; font-size:12pt;"><div style="margin-bottom:5px; display:flex;"><span style="width:100px;">Nama</span><span style="width:10px;">:</span><span style="flex:1; border-bottom:1px solid #000;"></span></div><div style="margin-bottom:5px; display:flex;"><span style="width:100px;">Kelas</span><span style="width:10px;">:</span><span style="flex:1; border-bottom:1px solid #000;"></span></div><div style="margin-bottom:5px; display:flex;"><span style="width:100px;">Nomor Absen</span><span style="width:10px;">:</span><span style="flex:1; border-bottom:1px solid #000;"></span></div></div><div style="text-align:center; font-weight:bold; margin:15px 0; font-size:13pt; text-transform:uppercase; text-decoration:underline;">Soal Pilihan Ganda</div><div class="soal-item"><p style="text-align: justify;"><strong>1.</strong> Teknologi informasi dan komunikasi dapat diartikan sebagai segala kegiatan yang berkaitan dengan pemrosesan, manipulasi, pengolahan, pemindahan, dan penyampaian informasi menggunakan suatu media. Pernyataan ini merujuk pada definisi...</p><div class="opsi"><div class="opsi-item"><span class="opsi-huruf">A.</span><span class="opsi-teks" style="text-align: justify;">TIK</span></div><div class="opsi-item"><span class="opsi-huruf">B.</span><span class="opsi-teks" style="text-align: justify;">Hardware</span></div><div class="opsi-item"><span class="opsi-huruf">C.</span><span class="opsi-teks" style="text-align: justify;">Software</span></div><div class="opsi-item"><span class="opsi-huruf">D.</span><span class="opsi-teks" style="text-align: justify;">Brainware</span></div><div class="opsi-item"><span class="opsi-huruf">E.</span><span class="opsi-teks" style="text-align: justify;">Jaringan</span></div></div></div><div style="margin-top:20px; border-top:2px solid #000; padding-top:10px;"><h3 style="text-align:center; margin:0 0 10px 0; font-weight:bold; text-transform:uppercase; text-decoration:underline;">Kunci Jawaban</h3><table style="width:100%; border-collapse:collapse; margin-top:10px;"><tbody><tr><td style="padding:3px 8px; border:1px solid #ccc; font-size:12pt; text-align:center;"> 1. A</td><td></td><td></td><td></td><td></td></tr></tbody></table></div></div><div style="text-align:center; margin-top:10px; font-size:12px; color:var(--text-secondary);"> Preview halaman 1 | Total 1 soal | F4 (21.5×33 cm)</div></div></div>
+      <div class="alert-info" style="margin-top:10px;">
+        💡 <strong>Tips:</strong>
+        <ul class="tips-list">
+          <li><strong>Cetak / Simpan PDF:</strong> Membuka dialog cetak browser. Pilih "Save as PDF" pada tujuan printer.</li>
+          <li><strong>Export Word (.rtf):</strong> Format Rich Text yang <strong>dijamin bisa dibuka di Google Docs</strong>, MS Word, dll.</li>
+          <li><strong>Export Excel:</strong> Mengunduh file .xlsx berisi tabel soal rapi.</li>
+          <li>Semua output (cetak, preview, Word) sekarang menggunakan format <strong>rata kanan-kiri (justify)</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>📊 9. Integrasi Google Spreadsheet (Kirim Nilai Otomatis)</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-secondary);">Masukkan URL Web App dari Google Apps Script untuk menerima hasil ujian siswa secara otomatis ke Google Spreadsheet.</p>
+      <div class="form-group">
+        <label>URL Google Apps Script Web App:</label>
+        <input type="text" id="inputGoogleSheet" class="input-judul" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div class="panel-row">
+        <button class="btn btn-success" onclick="simpanGoogleSheet()" style="padding:8px 15px; font-size:13px;">💾 Simpan URL</button>
+        <button class="btn btn-warning" onclick="tesKirimGoogleSheet()" style="padding:8px 15px; font-size:13px;">🧪 Tes Kirim Data</button>
+        <button class="btn btn-secondary" onclick="resetGoogleSheet()" style="padding:8px 15px; font-size:13px;">🔄 Kosongkan</button>
+      </div>
+      <div id="statusGoogleSheet"></div>
+      <div class="alert-info" style="margin-top:10px;">
+        💡 <strong>Panduan Pembuatan Google Apps Script:</strong>
+        <ol class="step-list">
+          <li>Buat Google Spreadsheet baru di Google Drive Anda.</li>
+          <li>Klik menu <strong>Ekstensi &gt; Apps Script</strong>.</li>
+          <li>Hapus kode lama dan tempel kode berikut:
+            <div style="margin-top:5px;">
+              <button class="btn btn-secondary" onclick="salinKodeGas()" style="padding:4px 10px; font-size:12px; margin-bottom:5px;">📋 Salin Kode Apps Script</button>
+<pre id="kodeGasText" style="background:var(--bg-primary); padding:10px; border-radius:4px; overflow-x:auto; font-size:11px; border:1px solid var(--border-color); color:var(--text-primary); -webkit-user-select:text; user-select:text;">function doPost(e) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000); // Tunggu antrean maksimal 10 detik agar tidak ada bentrok antar pengiriman
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var data = JSON.parse(e.postData.contents);
+
+    // 1. Jika sinkronisasi otomatis dari Dashboard Guru
+    if (data.type === 'dashboard_sync') {
+      var sheetGuru = ss.getSheetByName("Pengaturan_Guru");
+      if (!sheetGuru) {
+        sheetGuru = ss.insertSheet("Pengaturan_Guru");
+      }
+      if (sheetGuru.getLastRow() == 0) {
+        sheetGuru.appendRow(["ID Sync", "Waktu Sync", "Judul Ujian", "Subjudul", "Token", "Durasi (Menit)", "Jumlah Soal", "Acak Soal", "Acak Opsi", "Batas Pelanggaran", "Nilai Max", "KKM", "Total Bank Soal", "Data Lengkap (JSON)"]);
+      }
+      var syncId = String(data.submissionId || data.timestamp || "");
+      if (syncId &amp;&amp; sheetGuru.getLastRow() &gt; 1) {
+        var existingSyncIds = sheetGuru.getRange(2, 1, sheetGuru.getLastRow() - 1, 1).getValues();
+        for (var s = 0; s &lt; existingSyncIds.length; s++) {
+          if (String(existingSyncIds[s][0]) === syncId) {
+            return ContentService.createTextOutput(JSON.stringify({result: "already_exists", type: "dashboard_sync"})).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      }
+      sheetGuru.appendRow([
+        syncId,
+        data.waktuSync || new Date().toLocaleString(),
+        data.judul || "",
+        data.subJudul || "",
+        data.token || "",
+        data.durasi || 0,
+        data.jumlahSoal || 0,
+        data.acak ? "Ya" : "Tidak",
+        data.acakOpsi ? "Ya" : "Tidak",
+        data.maxPelanggaran || 0,
+        data.nilaiMaksimal || 100,
+        data.kkm || 75,
+        data.totalBankSoal || 0,
+        JSON.stringify(data)
+      ]);
+      SpreadsheetApp.flush();
+      return ContentService.createTextOutput(JSON.stringify({result: "success", type: "dashboard_sync"})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2. Pengiriman nilai ujian siswa (DENGAN PROTEKSI ANTI-DUPLIKAT)
+    var sheetSiswa = ss.getSheetByName("Hasil_Ujian") || ss.getActiveSheet();
+    if (sheetSiswa.getLastRow() == 0) {
+      sheetSiswa.appendRow(["ID Pengiriman", "Timestamp", "Nama", "Nomor Absen", "Kelas", "Nilai", "Benar", "Total Soal", "Pelanggaran", "Auto Submit", "Waktu Selesai"]);
+    }
+
+    // Periksa apakah ID Pengiriman sudah ada untuk mencegah data dobel
+    var subId = String(data.submissionId || "");
+    if (subId &amp;&amp; sheetSiswa.getLastRow() &gt; 1) {
+      var existingIds = sheetSiswa.getRange(2, 1, sheetSiswa.getLastRow() - 1, 1).getValues();
+      for (var i = 0; i &lt; existingIds.length; i++) {
+        if (String(existingIds[i][0]) === subId) {
+          return ContentService.createTextOutput(JSON.stringify({result: "already_exists", type: "hasil_ujian"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    sheetSiswa.appendRow([
+      subId,
+      data.waktuSelesai || new Date(),
+      data.nama || "",
+      data.nomor || "",
+      data.kelas || "",
+      data.nilai || 0,
+      data.benar || 0,
+      data.totalSoal || 0,
+      data.pelanggaran || 0,
+      data.autoSubmit ? "Ya" : "Tidak",
+      data.waktuSelesai || ""
+    ]);
+    SpreadsheetApp.flush();
+    return ContentService.createTextOutput(JSON.stringify({result: "success", type: "hasil_ujian"})).setMimeType(ContentService.MimeType.JSON);
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({result: "error", error: error.toString()})).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}</pre>
+            </div>
+          </li>
+          <li>Klik <strong>Terapkan (Deploy) &gt; Penerapan baru (New deployment)</strong>.</li>
+          <li>Pilih jenis: <strong>Aplikasi web (Web app)</strong>.</li>
+          <li>Setel <em>"Siapa yang memiliki akses" (Who has access)</em> ke: <strong>Siapa saja (Anyone)</strong>.</li>
+          <li>Klik <strong>Terapkan (Deploy)</strong>, lalu berikan izin akses:
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              <li>Jika muncul peringatan <em>"Google hasn't verified this app"</em>, klik <strong>Advanced</strong> (Tingkat lanjut) di kiri bawah.</li>
+              <li>Klik <strong>Go to ... (unsafe)</strong> / <strong>Lanjutkan ke ... (tidak aman)</strong>.</li>
+              <li>Klik <strong>Allow</strong> / <strong>Izinkan</strong>.</li>
+              <li><em>(Peringatan ini normal karena skrip dibuat sendiri dan belum didaftarkan sebagai aplikasi publik oleh Google)</em>.</li>
+            </ul>
+          </li>
+          <li>Salin <strong>URL Aplikasi Web (Web App URL)</strong> lalu tempel pada kolom di atas.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>🗑️ 10. Reset Data Siswa &amp; Data Ter-Embed</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-secondary);">Hapus semua data siswa yang sedang/sudah ujian agar file HTML yang dibagikan benar-benar bersih tanpa bekas data.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-danger" onclick="resetDataSiswa()" style="padding:8px 15px; font-size:13px;">🗑️ Reset Data Siswa</button>
+        <button class="btn btn-warning" onclick="hapusDataTerEmbed()" style="padding:8px 15px; font-size:13px;">🧹 Hapus Data Ter-Embed</button>
+      </div>
+      <div id="statusResetSiswa"></div>
+    </div>
+
+    <div class="panel panel-highlight" style="margin-top:20px; border-left: 6px solid var(--accent-green);">
+      <h3>💾 11. Simpan Semua Pengaturan &amp; Download File HTML</h3>
+      <p style="font-size:13px; margin:0 0 10px 0; color:var(--text-primary);">
+        Gunakan tombol di bawah untuk <strong>menyimpan seluruh perubahan pengaturan</strong> yang sudah dilakukan (Judul, Token, Password, Durasi, Jumlah Soal, Excel Soal, Pengacakan, Status Reset, Score/KKM, Batas Pelanggaran, dan Google Sheet URL) agar tidak hilang, atau langsung mendownload file HTML versi terbaru.
+      </p>
+      <div class="alert-info">
+        <strong>📋 Langkah-langkah Simpan &amp; Distribusi:</strong>
+        <ol class="step-list">
+          <li>Klik tombol <strong>"💾 Simpan Semua Pengaturan"</strong> di bawah untuk menyimpan perubahan.</li>
+          <li>Klik <strong>" Download HTML Terbaru"</strong> untuk mengunduh file HTML baru.</li>
+          <li>Ganti file HTML lama di hosting / GitHub Pages dengan file baru ini.</li>
+        </ol>
+      </div>
+      <div class="panel-row" style="margin-top:15px; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <button class="btn btn-success" onclick="simpanSemuaPengaturan()" style="padding:12px 25px; font-size:15px; font-weight:bold;">💾 Simpan Semua Pengaturan</button>
+        <button class="btn btn-primary" onclick="simpanPermanenKeHTML()" style="padding:12px 25px; font-size:15px; font-weight:bold; background:var(--accent-blue);"> Download HTML Terbaru</button>
+        <span style="font-size:13px; color:var(--text-secondary); margin-left: auto;">Versi: <strong id="currentVersionDisplay">v5.11</strong></span>
+      </div>
+      <div id="statusSimpanSemua" style="margin-top:10px;"></div>
+      <div id="statusSimpanPermanen" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div id="quizArea" style="display:none;" class="fade-in">
+    <div id="quizNetworkNotice" class="sync-banner sync-banner-offline" style="display:none; margin-bottom:10px;">
+      <span>📡 <strong>MODE OFFLINE:</strong> Jawaban Anda tersimpan otomatis di perangkat. Jawaban &amp; nilai akan dikirim ke spreadsheet setelah tersambung ke Internet.</span>
+    </div>
+    <div class="clearfix"><button class="btn-reset" onclick="bukaModalReset()"> Reset (Guru)</button></div>
+    <div class="timer" id="timer">Waktu Tersisa: 30:00</div>
+    <div class="progress-container"><div class="progress-bar" id="progressBar" style="width: 0%"></div></div>
+    <div style="text-align:right; font-size:12px; color:var(--text-secondary); margin-top:-10px; margin-bottom:10px;">Dikerjakan: <span id="progressText">0 / 0</span></div>
+    <div class="violation-bar"><span>⚠️ Pelanggaran:</span><span class="violation-count" id="violationCountDisplay">0 / 5</span></div>
+    <div id="soalContainer"></div>
+    <button class="btn" id="btnKumpul" onclick="kumpulkan()" disabled="" style="width:100%; margin-top:15px; padding:12px;">Kumpulkan Jawaban</button>
+  </div>
+
+  <div id="resultArea" style="display:none;" class="fade-in"></div>
+</div>
+
+<div class="modal" id="loginModal" style="display: none;">
+  <div class="modal-content">
+    <h3>🔑 Login Guru</h3>
+    <p style="font-size:14px; margin:10px 0;">Masukkan password guru:</p>
+    <input type="password" id="passwordLogin" placeholder="Password">
+    <div style="margin-top:15px;">
+      <button class="btn" onclick="prosesLogin()">Login</button>
+      <button class="btn-cancel" onclick="tutupModal('loginModal')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="resetModal" style="display: none;">
+  <div class="modal-content">
+    <h3>🔐 Reset Ujian</h3>
+    <p style="font-size:14px; margin:10px 0;">Masukkan password guru untuk mereset sesi ini:</p>
+    <input type="password" id="passwordGuru" placeholder="Password">
+    <div style="margin-top:15px;">
+      <button class="btn" onclick="konfirmasiReset()">Reset</button>
+      <button class="btn-cancel" onclick="tutupModal('resetModal')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const HTML_VERSION = "5.12";
+
+// __CONFIG_START__
+const JUDUL_DEFAULT = "EVALUASI";
+const SUBJUDUL_DEFAULT = "MATERI BAB";
+const PASSWORD_DEFAULT = "guru123";
+const TOKEN_DEFAULT = "2027";
+const GOOGLE_SHEET_URL_DEFAULT = "https://script.google.com/macros/s/AKfycby1GeENSeS8rGqVaN6CWwkkKK1xhNQxS4x-fTZ3hxc8bM2GDMkT5I7udv_Hz2Vnd3ag/exec";
+const DURASI_DEFAULT = 35;
+const JUMLAH_SOAL_DEFAULT = 0;
+const ACAK_DEFAULT = true;
+const ACAK_OPSI_DEFAULT = true;
+const ENABLE_RESET_DEFAULT = false;
+const MAX_PELANGGARAN_DEFAULT = 6;
+const NILAI_MAKSIMAL_DEFAULT = 100;
+const NILAI_KKM_DEFAULT = 75;
+const TAMPIL_NILAI_DEFAULT = true;
+const CETAK_FONT_DEFAULT = "'Times New Roman', serif";
+const CETAK_KERTAS_DEFAULT = "F4";
+const CETAK_UKURAN_FONT_DEFAULT = "12";
+const CETAK_SPASI_DEFAULT = "1";
+const CETAK_MARGIN_ATAS_DEFAULT = "1.5";
+const CETAK_MARGIN_BAWAH_DEFAULT = "1.5";
+const CETAK_MARGIN_KIRI_DEFAULT = "1.5";
+const CETAK_MARGIN_KANAN_DEFAULT = "1.5";
+const CETAK_KUNCI_DEFAULT = "akhir";
+const CETAK_ACAK_DEFAULT = "tidak";
+const SOAL_DEFAULT = [{"q":"Teknologi informasi dan komunikasi dapat diartikan sebagai segala kegiatan yang berkaitan dengan pemrosesan, manipulasi, pengolahan, pemindahan, dan penyampaian informasi menggunakan suatu media. Pernyataan ini merujuk pada definisi...","o":["TIK","Hardware","Software","Brainware","Jaringan"],"a":0}];
+// __CONFIG_END__
+
+// __RUNTIME_CONFIG_START__
+let configDurasi = parseInt(localStorage.getItem('configDurasi') || (typeof DURASI_DEFAULT !== 'undefined' ? DURASI_DEFAULT : 35));
+let configJumlahSoal = parseInt(localStorage.getItem('configJumlahSoal') || (typeof JUMLAH_SOAL_DEFAULT !== 'undefined' ? JUMLAH_SOAL_DEFAULT : 0));
+let configAcak = localStorage.getItem('configAcak') !== null ? localStorage.getItem('configAcak') === 'true' : (typeof ACAK_DEFAULT !== 'undefined' ? ACAK_DEFAULT : true);
+let configAcakOpsi = localStorage.getItem('configAcakOpsi') !== null ? localStorage.getItem('configAcakOpsi') === 'true' : (typeof ACAK_OPSI_DEFAULT !== 'undefined' ? ACAK_OPSI_DEFAULT : true);
+let configEnableReset = localStorage.getItem('configEnableReset') !== null ? localStorage.getItem('configEnableReset') === 'true' : (typeof ENABLE_RESET_DEFAULT !== 'undefined' ? ENABLE_RESET_DEFAULT : false);
+let configMaxPelanggaran = parseInt(localStorage.getItem('configMaxPelanggaran') || (typeof MAX_PELANGGARAN_DEFAULT !== 'undefined' ? MAX_PELANGGARAN_DEFAULT : 6));
+let configNilaiMaksimal = parseInt(localStorage.getItem('configNilaiMaksimal') || (typeof NILAI_MAKSIMAL_DEFAULT !== 'undefined' ? NILAI_MAKSIMAL_DEFAULT : 100));
+let configNilaiKKM = parseInt(localStorage.getItem('configNilaiKKM') || (typeof NILAI_KKM_DEFAULT !== 'undefined' ? NILAI_KKM_DEFAULT : 75));
+let configTampilNilai = localStorage.getItem('configTampilNilai') !== null ? localStorage.getItem('configTampilNilai') !== 'false' : (typeof TAMPIL_NILAI_DEFAULT !== 'undefined' ? TAMPIL_NILAI_DEFAULT : true);
+let configCetakFont = localStorage.getItem('configCetakFont') || (typeof CETAK_FONT_DEFAULT !== 'undefined' ? CETAK_FONT_DEFAULT : "'Times New Roman', serif");
+let configCetakKertas = localStorage.getItem('configCetakKertas') || (typeof CETAK_KERTAS_DEFAULT !== 'undefined' ? CETAK_KERTAS_DEFAULT : "F4");
+let configCetakUkuranFont = localStorage.getItem('configCetakUkuranFont') || (typeof CETAK_UKURAN_FONT_DEFAULT !== 'undefined' ? CETAK_UKURAN_FONT_DEFAULT : "12");
+let configCetakSpasi = localStorage.getItem('configCetakSpasi') || (typeof CETAK_SPASI_DEFAULT !== 'undefined' ? CETAK_SPASI_DEFAULT : "1");
+let configCetakMarginAtas = localStorage.getItem('configCetakMarginAtas') || (typeof CETAK_MARGIN_ATAS_DEFAULT !== 'undefined' ? CETAK_MARGIN_ATAS_DEFAULT : "1.5");
+let configCetakMarginBawah = localStorage.getItem('configCetakMarginBawah') || (typeof CETAK_MARGIN_BAWAH_DEFAULT !== 'undefined' ? CETAK_MARGIN_BAWAH_DEFAULT : "1.5");
+let configCetakMarginKiri = localStorage.getItem('configCetakMarginKiri') || (typeof CETAK_MARGIN_KIRI_DEFAULT !== 'undefined' ? CETAK_MARGIN_KIRI_DEFAULT : "1.5");
+let configCetakMarginKanan = localStorage.getItem('configCetakMarginKanan') || (typeof CETAK_MARGIN_KANAN_DEFAULT !== 'undefined' ? CETAK_MARGIN_KANAN_DEFAULT : "1.5");
+let configCetakKunci = localStorage.getItem('configCetakKunci') || (typeof CETAK_KUNCI_DEFAULT !== 'undefined' ? CETAK_KUNCI_DEFAULT : "akhir");
+let configCetakAcak = localStorage.getItem('configCetakAcak') || (typeof CETAK_ACAK_DEFAULT !== 'undefined' ? CETAK_ACAK_DEFAULT : "tidak");
+// __RUNTIME_CONFIG_END__
+
+const UKURAN_KERTAS = {
+  'F4': { width: 21.5, height: 33 },
+  'A4': { width: 21, height: 29.7 },
+  'Letter': { width: 21.59, height: 27.94 },
+  'Legal': { width: 21.59, height: 35.56 },
+  'A5': { width: 14.8, height: 21 },
+  'B5': { width: 17.6, height: 25 }
+};
+
+const savedVersion = localStorage.getItem('htmlVersion');
+if (savedVersion !== HTML_VERSION) {
+  ['configJudul','configSubJudul','configPassword','configToken','configGoogleSheetUrl','configDurasi','configJumlahSoal','configAcak','configAcakOpsi','configEnableReset','configMaxPelanggaran','configNilaiMaksimal','configNilaiKKM','configTampilNilai','configCetakFont','configCetakKertas','configCetakUkuranFont','configCetakSpasi','configCetakMarginAtas','configCetakMarginBawah','configCetakMarginKiri','configCetakMarginKanan','configCetakKunci','configCetakAcak','soalAktif'].forEach(k => localStorage.removeItem(k));
+  localStorage.setItem('htmlVersion', HTML_VERSION);
+}
+
+let configJudul = localStorage.getItem('configJudul') || JUDUL_DEFAULT;
+let configSubJudul = localStorage.getItem('configSubJudul') || SUBJUDUL_DEFAULT;
+let configToken = localStorage.getItem('configToken') || TOKEN_DEFAULT;
+let configGoogleSheetUrl = localStorage.getItem('configGoogleSheetUrl') || GOOGLE_SHEET_URL_DEFAULT;
+let PASSWORD_GURU = localStorage.getItem('configPassword') || PASSWORD_DEFAULT;
+let soalAktif = JSON.parse(localStorage.getItem('soalAktif') || 'null') || SOAL_DEFAULT;
+
+let waktuMulai, durasi = configDurasi * 60, timerInterval;
+let statusUjian = localStorage.getItem('statusUjian');
+let jawaban = JSON.parse(localStorage.getItem('jawaban') || '{}');
+let dataSiswa = JSON.parse(localStorage.getItem('dataSiswa') || 'null');
+let pelanggaran = JSON.parse(localStorage.getItem('pelanggaran') || '[]');
+let jumlahPelanggaran = parseInt(localStorage.getItem('jumlahPelanggaran') || '0');
+let maxPelanggaranUjian = configMaxPelanggaran, isFullscreenActive = false, soalUrutan = [];
+let urutanOpsiPerSoal = JSON.parse(localStorage.getItem('urutanOpsiPerSoal') || '{}');
+let waktuJawaban = JSON.parse(localStorage.getItem('waktuJawaban') || '{}');
+let isSheetSyncing = false;
+let isDashboardSyncing = false;
+
+function buatSubmissionId() {
+  return 'SUB-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function updateGlobalNetworkStatusUI() {
+  const isOnline = navigator.onLine;
+  const globalBanner = document.getElementById('globalNetworkBanner');
+  const globalText = document.getElementById('globalNetworkStatusText');
+  const identityNotice = document.getElementById('identityNetworkNotice');
+  const quizNotice = document.getElementById('quizNetworkNotice');
+  const pendingSheet = localStorage.getItem('pendingSheetPayload');
+  const sheetSent = localStorage.getItem('sheetSent') === 'true';
+
+  if (globalBanner && globalText) {
+    if (!isOnline) {
+      globalBanner.className = 'sync-banner sync-banner-offline';
+      globalBanner.style.display = 'flex';
+      globalText.innerHTML = '<span class="sync-pulse sync-pulse-red"></span><span>📡 <strong>MODE OFFLINE:</strong> Ujian dan perubahan data tetap tersimpan aman di perangkat. Data otomatis tersinkron ke spreadsheet saat terhubung kembali ke Internet.</span>';
+    } else if (pendingSheet && !sheetSent) {
+      globalBanner.className = 'sync-banner sync-banner-warning';
+      globalBanner.style.display = 'flex';
+      globalText.innerHTML = '<span class="sync-pulse sync-pulse-yellow"></span><span>⚠️ <strong>ONLINE:</strong> Menyinkronkan data tersimpan ke Google Spreadsheet...</span>';
+    } else {
+      globalBanner.style.display = 'none';
+    }
+  }
+
+  if (identityNotice) {
+    identityNotice.style.display = !isOnline ? 'flex' : 'none';
+  }
+  if (quizNotice) {
+    quizNotice.style.display = !isOnline ? 'flex' : 'none';
+  }
+  updateDashboardSyncBannerUI();
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  document.querySelector('.dark-mode-toggle').innerText = isDark ? '☀️' : '🌙';
+  if (statusUjian === 'berlangsung' && dataSiswa) buatWatermark(dataSiswa.nama, dataSiswa.nomor, dataSiswa.kelas);
+}
+
+function updateJudulDiSemuaTempat() {
+  document.title = configJudul;
+  document.getElementById('judulUtama').innerText = configJudul;
+  document.getElementById('subJudul').innerText = configSubJudul;
+  const pj = document.getElementById('previewJudulUtama'), ps = document.getElementById('previewSubJudul'), pt = document.getElementById('previewToken');
+  if (pj) pj.innerText = configJudul; if (ps) ps.innerText = configSubJudul; if (pt) pt.innerText = configToken;
+}
+
+function bukaFormSiswa() { document.getElementById('menuAwal').style.display = 'none'; document.getElementById('identityForm').style.display = 'block'; updateInfoWaktu(); }
+function kembaliKeMenu() { document.getElementById('menuAwal').style.display = 'block'; document.getElementById('identityForm').style.display = 'none'; }
+function bukaLoginGuru() { document.getElementById('loginModal').style.display = 'flex'; document.getElementById('passwordLogin').value = ''; setTimeout(() => document.getElementById('passwordLogin').focus(), 100); }
+function prosesLogin() { const pwd = document.getElementById('passwordLogin').value; if (pwd === PASSWORD_GURU) { tutupModal('loginModal'); bukaDashboard(); } else { alert('❌ Password salah!'); } }
+function bukaDashboard() { document.getElementById('menuAwal').style.display = 'none'; document.getElementById('identityForm').style.display = 'none'; document.getElementById('dashboardGuru').style.display = 'block'; loadDashboardData(); }
+function keluarDashboard() { document.getElementById('dashboardGuru').style.display = 'none'; document.getElementById('menuAwal').style.display = 'block'; updateJudulDiSemuaTempat(); }
+
+function loadDashboardData() {
+  document.getElementById('inputJudul').value = configJudul;
+  document.getElementById('inputSubJudul').value = configSubJudul;
+  document.getElementById('inputToken').value = configToken;
+  document.getElementById('inputGoogleSheet').value = configGoogleSheetUrl;
+  document.getElementById('previewJudulUtama').innerText = configJudul;
+  document.getElementById('previewSubJudul').innerText = configSubJudul;
+  document.getElementById('previewToken').innerText = configToken;
+  updatePasswordDisplay();
+  document.getElementById('inputWaktu').value = configDurasi;
+  document.getElementById('inputJumlahSoal').value = configJumlahSoal;
+  document.getElementById('inputNilaiMaksimal').value = configNilaiMaksimal;
+  document.getElementById('inputNilaiKKM').value = configNilaiKKM;
+  document.getElementById('selectTampilNilai').value = configTampilNilai ? "true" : "false";
+  document.getElementById('inputMaxPelanggaran').value = configMaxPelanggaran;
+  document.getElementById('statusWaktu').innerHTML = '<div class="alert-success">✅ Waktu: <strong>' + configDurasi + ' menit</strong> | Soal: <strong>' + (configJumlahSoal === 0 ? 'Semua' : configJumlahSoal) + '</strong></div>';
+  document.getElementById('toggleAcak').checked = configAcak;
+  document.getElementById('toggleAcakOpsi').checked = configAcakOpsi;
+  document.getElementById('toggleEnableReset').checked = configEnableReset;
+  updateStatusAcak(); updateStatusAcakOpsi(); updateStatusEnableReset();
+  if (document.getElementById('cetakFont')) document.getElementById('cetakFont').value = configCetakFont;
+  if (document.getElementById('cetakKertas')) document.getElementById('cetakKertas').value = configCetakKertas;
+  if (document.getElementById('cetakUkuranFont')) document.getElementById('cetakUkuranFont').value = configCetakUkuranFont;
+  if (document.getElementById('cetakSpasi')) document.getElementById('cetakSpasi').value = configCetakSpasi;
+  if (document.getElementById('cetakMarginAtas')) document.getElementById('cetakMarginAtas').value = configCetakMarginAtas;
+  if (document.getElementById('cetakMarginBawah')) document.getElementById('cetakMarginBawah').value = configCetakMarginBawah;
+  if (document.getElementById('cetakMarginKiri')) document.getElementById('cetakMarginKiri').value = configCetakMarginKiri;
+  if (document.getElementById('cetakMarginKanan')) document.getElementById('cetakMarginKanan').value = configCetakMarginKanan;
+  if (document.getElementById('cetakKunci')) document.getElementById('cetakKunci').value = configCetakKunci;
+  if (document.getElementById('cetakAcak')) document.getElementById('cetakAcak').value = configCetakAcak;
+  document.getElementById('jumlahSoalSaatIni').innerText = soalAktif.length;
+  document.getElementById('versionBadge').innerText = 'v' + HTML_VERSION;
+  document.getElementById('currentVersionDisplay').innerText = 'v' + HTML_VERSION;
+  initDashboardAutoSave();
+  updateDashboardSyncBannerUI();
+  if (localStorage.getItem('pendingDashboardSync') && navigator.onLine) {
+    prosesAntreanDashboardSync();
+  }
+}
+
+let autoSaveDashboardTimeout = null;
+let isDashboardAutoSaveInitialized = false;
+
+function kumpulkanSemuaDataDashboard() {
+  return {
+    type: 'dashboard_sync',
+    submissionId: 'CONFIG-' + Date.now(),
+    waktuSync: new Date().toLocaleString('id-ID'),
+    timestamp: Date.now(),
+    judul: configJudul,
+    subJudul: configSubJudul,
+    token: configToken,
+    passwordGuru: PASSWORD_GURU,
+    durasi: configDurasi,
+    jumlahSoal: configJumlahSoal,
+    acak: configAcak,
+    acakOpsi: configAcakOpsi,
+    enableReset: configEnableReset,
+    nilaiMaksimal: configNilaiMaksimal,
+    kkm: configNilaiKKM,
+    tampilNilai: configTampilNilai,
+    maxPelanggaran: configMaxPelanggaran,
+    googleSheetUrl: configGoogleSheetUrl,
+    pengaturanCetak: {
+      font: configCetakFont,
+      kertas: configCetakKertas,
+      ukuranFont: configCetakUkuranFont,
+      spasi: configCetakSpasi,
+      marginAtas: configCetakMarginAtas,
+      marginBawah: configCetakMarginBawah,
+      marginKiri: configCetakMarginKiri,
+      marginKanan: configCetakMarginKanan,
+      kunci: configCetakKunci,
+      acak: configCetakAcak
+    },
+    totalBankSoal: (soalAktif || []).length,
+    soalAktif: soalAktif || [],
+    nama: "Pengaturan Guru (Sync Otomatis)",
+    nomor: "GURU-CONFIG",
+    kelas: configJudul,
+    nilai: configNilaiMaksimal,
+    benar: (soalAktif || []).length,
+    totalSoal: (soalAktif || []).length,
+    pelanggaran: 0,
+    autoSubmit: false,
+    waktuSelesai: new Date().toLocaleString('id-ID')
+  };
+}
+
+function simpanDataDashboardOtomatis(triggerSync = true) {
+  try {
+    const inputJudul = document.getElementById('inputJudul');
+    const inputSubJudul = document.getElementById('inputSubJudul');
+    const inputToken = document.getElementById('inputToken');
+    if (inputJudul && inputToken) {
+      const j = inputJudul.value.trim();
+      const sj = inputSubJudul ? inputSubJudul.value.trim() : '';
+      const t = inputToken.value.trim();
+      if (j) { configJudul = j; localStorage.setItem('configJudul', configJudul); }
+      configSubJudul = sj; localStorage.setItem('configSubJudul', configSubJudul);
+      if (t) { configToken = t; localStorage.setItem('configToken', configToken); }
+      updateJudulDiSemuaTempat();
+    }
+
+    const inputWaktu = document.getElementById('inputWaktu');
+    if (inputWaktu) {
+      const w = parseInt(inputWaktu.value);
+      if (!isNaN(w) && w >= 1 && w <= 180) {
+        configDurasi = w; localStorage.setItem('configDurasi', configDurasi);
+      }
+    }
+
+    const inputJml = document.getElementById('inputJumlahSoal');
+    if (inputJml) {
+      const jml = parseInt(inputJml.value);
+      if (!isNaN(jml) && jml >= 0) {
+        configJumlahSoal = jml; localStorage.setItem('configJumlahSoal', configJumlahSoal);
+      }
+    }
+    updateInfoWaktu();
+
+    const tAcak = document.getElementById('toggleAcak');
+    if (tAcak) { configAcak = tAcak.checked; localStorage.setItem('configAcak', configAcak); updateStatusAcak(); }
+    const tAcakOpsi = document.getElementById('toggleAcakOpsi');
+    if (tAcakOpsi) { configAcakOpsi = tAcakOpsi.checked; localStorage.setItem('configAcakOpsi', configAcakOpsi); updateStatusAcakOpsi(); }
+    const tReset = document.getElementById('toggleEnableReset');
+    if (tReset) { configEnableReset = tReset.checked; localStorage.setItem('configEnableReset', configEnableReset); updateStatusEnableReset(); updateResetButtonVisibility(); }
+
+    const inputNilaiMax = document.getElementById('inputNilaiMaksimal');
+    const inputKkm = document.getElementById('inputNilaiKKM');
+    const selTampil = document.getElementById('selectTampilNilai');
+    if (inputNilaiMax && inputKkm && selTampil) {
+      const maxScore = parseInt(inputNilaiMax.value);
+      const kkm = parseInt(inputKkm.value);
+      if (!isNaN(maxScore) && maxScore >= 10) { configNilaiMaksimal = maxScore; localStorage.setItem('configNilaiMaksimal', configNilaiMaksimal); }
+      if (!isNaN(kkm) && kkm <= configNilaiMaksimal) { configNilaiKKM = kkm; localStorage.setItem('configNilaiKKM', configNilaiKKM); }
+      configTampilNilai = selTampil.value === 'true'; localStorage.setItem('configTampilNilai', configTampilNilai);
+    }
+
+    const inputMaxPel = document.getElementById('inputMaxPelanggaran');
+    if (inputMaxPel) {
+      const mp = parseInt(inputMaxPel.value);
+      if (!isNaN(mp) && mp >= 1 && mp <= 20) { configMaxPelanggaran = mp; localStorage.setItem('configMaxPelanggaran', configMaxPelanggaran); }
+    }
+
+    if (document.getElementById('cetakFont')) {
+      configCetakFont = document.getElementById('cetakFont').value; localStorage.setItem('configCetakFont', configCetakFont);
+      configCetakKertas = document.getElementById('cetakKertas').value; localStorage.setItem('configCetakKertas', configCetakKertas);
+      configCetakUkuranFont = document.getElementById('cetakUkuranFont').value; localStorage.setItem('configCetakUkuranFont', configCetakUkuranFont);
+      configCetakSpasi = document.getElementById('cetakSpasi').value; localStorage.setItem('configCetakSpasi', configCetakSpasi);
+      configCetakMarginAtas = document.getElementById('cetakMarginAtas').value; localStorage.setItem('configCetakMarginAtas', configCetakMarginAtas);
+      configCetakMarginBawah = document.getElementById('cetakMarginBawah').value; localStorage.setItem('configCetakMarginBawah', configCetakMarginBawah);
+      configCetakMarginKiri = document.getElementById('cetakMarginKiri').value; localStorage.setItem('configCetakMarginKiri', configCetakMarginKiri);
+      configCetakMarginKanan = document.getElementById('cetakMarginKanan').value; localStorage.setItem('configCetakMarginKanan', configCetakMarginKanan);
+      configCetakKunci = document.getElementById('cetakKunci').value; localStorage.setItem('configCetakKunci', configCetakKunci);
+      configCetakAcak = document.getElementById('cetakAcak').value; localStorage.setItem('configCetakAcak', configCetakAcak);
+    }
+
+    const inputSheet = document.getElementById('inputGoogleSheet');
+    if (inputSheet) {
+      configGoogleSheetUrl = inputSheet.value.trim();
+      localStorage.setItem('configGoogleSheetUrl', configGoogleSheetUrl);
+    }
+
+    localStorage.setItem('soalAktif', JSON.stringify(soalAktif));
+
+    if (triggerSync) {
+      const payload = kumpulkanSemuaDataDashboard();
+      localStorage.setItem('pendingDashboardSync', JSON.stringify(payload));
+      updateDashboardSyncBannerUI('saving');
+      syncDashboardGuru(payload);
+    }
+  } catch (err) {
+    console.error('Error auto-saving dashboard:', err);
+  }
+}
+
+function jadwalkanAutoSave(delay = 500) {
+  if (autoSaveDashboardTimeout) clearTimeout(autoSaveDashboardTimeout);
+  autoSaveDashboardTimeout = setTimeout(() => {
+    simpanDataDashboardOtomatis(true);
+  }, delay);
+}
+
+function initDashboardAutoSave() {
+  if (isDashboardAutoSaveInitialized) return;
+  const inputIds = [
+    'inputJudul', 'inputSubJudul', 'inputToken', 'inputWaktu',
+    'inputJumlahSoal', 'inputNilaiMaksimal', 'inputNilaiKKM',
+    'inputMaxPelanggaran', 'inputGoogleSheet', 'cetakMarginAtas',
+    'cetakMarginBawah', 'cetakMarginKiri', 'cetakMarginKanan'
+  ];
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => jadwalkanAutoSave(600));
+      el.addEventListener('change', () => simpanDataDashboardOtomatis(true));
+    }
+  });
+
+  const selectAndToggleIds = [
+    'selectTampilNilai', 'toggleAcak', 'toggleAcakOpsi', 'toggleEnableReset',
+    'cetakFont', 'cetakKertas', 'cetakUkuranFont', 'cetakSpasi', 'cetakKunci', 'cetakAcak'
+  ];
+  selectAndToggleIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', () => simpanDataDashboardOtomatis(true));
+    }
+  });
+
+  isDashboardAutoSaveInitialized = true;
+}
+
+function simpanPengaturanNilai() {
+  const maxScore = parseInt(document.getElementById('inputNilaiMaksimal').value);
+  const kkm = parseInt(document.getElementById('inputNilaiKKM').value);
+  const tampil = document.getElementById('selectTampilNilai').value === 'true';
+
+  if (isNaN(maxScore) || maxScore < 10 || maxScore > 1000) {
+    document.getElementById('statusPengaturanNilai').innerHTML = '<div class="alert-error">❌ Nilai Maksimal harus antara 10 - 1000!</div>';
+    return;
+  }
+  if (isNaN(kkm) || kkm < 0 || kkm > maxScore) {
+    document.getElementById('statusPengaturanNilai').innerHTML = '<div class="alert-error">❌ KKM tidak boleh melebihi Nilai Maksimal!</div>';
+    return;
+  }
+
+  configNilaiMaksimal = maxScore;
+  configNilaiKKM = kkm;
+  configTampilNilai = tampil;
+
+  localStorage.setItem('configNilaiMaksimal', configNilaiMaksimal);
+  localStorage.setItem('configNilaiKKM', configNilaiKKM);
+  localStorage.setItem('configTampilNilai', configTampilNilai);
+
+  document.getElementById('statusPengaturanNilai').innerHTML = '<div class="alert-success">✅ Pengaturan Score berhasil disimpan! Maksimal: <strong>' + configNilaiMaksimal + '</strong>, KKM: <strong>' + configNilaiKKM + '</strong>, Tampilkan: <strong>' + (configTampilNilai ? 'Ya' : 'Tidak') + '</strong></div>';
+}
+
+function resetPengaturanNilai() {
+  configNilaiMaksimal = 100;
+  configNilaiKKM = 75;
+  configTampilNilai = true;
+
+  localStorage.setItem('configNilaiMaksimal', 100);
+  localStorage.setItem('configNilaiKKM', 75);
+  localStorage.setItem('configTampilNilai', true);
+
+  document.getElementById('inputNilaiMaksimal').value = 100;
+  document.getElementById('inputNilaiKKM').value = 75;
+  document.getElementById('selectTampilNilai').value = "true";
+
+  document.getElementById('statusPengaturanNilai').innerHTML = '<div class="alert-success">✅ Pengaturan score direset ke default (Maksimal: 100, KKM: 75, Tampilkan: Ya).</div>';
+  simpanDataDashboardOtomatis(true);
+}
+
+function salinKodeGas() {
+  const codeElem = document.getElementById('kodeGasText');
+  if (!codeElem) return;
+  const codeText = codeElem.innerText;
+  navigator.clipboard.writeText(codeText).then(() => {
+    alert('✅ Kode Apps Script berhasil disalin ke clipboard!');
+  }).catch(err => {
+    const textarea = document.createElement('textarea');
+    textarea.value = codeText;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('✅ Kode Apps Script berhasil disalin!');
+  });
+}
+
+function simpanGoogleSheet() {
+  const url = document.getElementById('inputGoogleSheet').value.trim();
+  configGoogleSheetUrl = url;
+  localStorage.setItem('configGoogleSheetUrl', configGoogleSheetUrl);
+  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-success">✅ URL Google Apps Script berhasil disimpan di perangkat ini!<br>📌 <strong>PENTING:</strong> Klik tombol <strong>"💾 Download HTML Terbaru"</strong> di bawah lalu ganti file di GitHub Pages/hosting Anda agar URL otomatis terpasang di seluruh HP/perangkat siswa tanpa perlu copy-paste lagi.</div>';
+}
+
+function resetGoogleSheet() {
+  if (!confirm('Kosongkan URL Google Apps Script?')) return;
+  configGoogleSheetUrl = '';
+  localStorage.setItem('configGoogleSheetUrl', '');
+  document.getElementById('inputGoogleSheet').value = '';
+  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-info">ℹ️ URL Google Apps Script dikosongkan.</div>';
+  simpanDataDashboardOtomatis(true);
+}
+
+function tesKirimGoogleSheet() {
+  const url = document.getElementById('inputGoogleSheet').value.trim();
+  if (!url) {
+    document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-error">❌ Masukkan URL Google Apps Script terlebih dahulu!</div>';
+    return;
+  }
+  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-info">⏳ Mengirim data uji coba ke Google Spreadsheet...</div>';
+  const testPayload = {
+    nama: "Uji Coba Sistem",
+    nomor: "00",
+    kelas: "GURU-TEST",
+    nilai: 100,
+    benar: 10,
+    totalSoal: 10,
+    pelanggaran: 0,
+    autoSubmit: false,
+    waktuSelesai: new Date().toLocaleString('id-ID')
+  };
+  kirimKeGoogleSheet(testPayload, url).then(success => {
+    if (success) {
+      document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-success">✅ Tes pengiriman berhasil terkirim! Silakan periksa Google Spreadsheet Anda.</div>';
+    } else {
+      document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-error">❌ Gagal mengirim tes data. Pastikan URL benar dan skrip diset ke "Siapa saja" (Anyone).</div>';
+    }
+  });
+}
+
+function simpanJudul() {
+  const judul = document.getElementById('inputJudul').value.trim(), subJudul = document.getElementById('inputSubJudul').value.trim(), token = document.getElementById('inputToken').value.trim();
+  if (!judul || !token) { document.getElementById('statusJudul').innerHTML = '<div class="alert-error">❌ Judul dan Token tidak boleh kosong!</div>'; return; }
+  configJudul = judul; configSubJudul = subJudul; configToken = token;
+  localStorage.setItem('configJudul', configJudul); localStorage.setItem('configSubJudul', configSubJudul); localStorage.setItem('configToken', configToken);
+  updateJudulDiSemuaTempat();
+  document.getElementById('statusJudul').innerHTML = '<div class="alert-success">✅ Berhasil disimpan. Klik "Download HTML Terbaru" di Panel 9!</div>';
+}
+
+function resetJudul() {
+  if (!confirm('Yakin ingin mengembalikan ke default?')) return;
+  configJudul = JUDUL_DEFAULT; configSubJudul = SUBJUDUL_DEFAULT; configToken = TOKEN_DEFAULT;
+  localStorage.setItem('configJudul', configJudul); localStorage.setItem('configSubJudul', configSubJudul); localStorage.setItem('configToken', configToken);
+  document.getElementById('inputJudul').value = configJudul; document.getElementById('inputSubJudul').value = configSubJudul; document.getElementById('inputToken').value = configToken;
+  updateJudulDiSemuaTempat();
+  document.getElementById('statusJudul').innerHTML = '<div class="alert-success">✅ Direset ke default</div>';
+  simpanDataDashboardOtomatis(true);
+}
+
+function togglePwd(inputId) { const input = document.getElementById(inputId); input.type = input.type === 'password' ? 'text' : 'password'; }
+function toggleDisplayPassword() { const display = document.getElementById('displayPassword'), btn = document.getElementById('btnTogglePwd'); if (display.innerText === '••••••••') { display.innerText = PASSWORD_GURU; btn.innerText = '🙈 Sembunyikan'; } else { display.innerText = '••••••••'; btn.innerText = '👁️ Lihat'; } }
+function updatePasswordDisplay() { document.getElementById('displayPassword').innerText = '••••••••'; document.getElementById('btnTogglePwd').innerText = '👁️ Lihat'; }
+
+function checkPasswordStrength() {
+  const pwd = document.getElementById('pwdBaru').value, div = document.getElementById('pwdStrength');
+  if (!pwd) { div.innerHTML = ''; return; }
+  let score = 0;
+  if (pwd.length >= 4) score++; if (pwd.length >= 8) score++; if (/[A-Z]/.test(pwd)) score++; if (/[0-9]/.test(pwd)) score++;
+  if (score <= 1) div.innerHTML = '<span style="color:#dc2626;">🔴 Lemah</span>';
+  else if (score <= 3) div.innerHTML = '<span style="color:#f59e0b;">🟡 Sedang</span>';
+  else div.innerHTML = '<span style="color:#16a34a;"> Kuat</span>';
+}
+
+function ubahPassword() {
+  const pwdLama = document.getElementById('pwdLama').value, pwdBaru = document.getElementById('pwdBaru').value, pwdKonfirmasi = document.getElementById('pwdKonfirmasi').value;
+  if (pwdLama !== PASSWORD_GURU) { document.getElementById('statusPassword').innerHTML = '<div class="alert-error">❌ Password lama salah!</div>'; return; }
+  if (!pwdBaru || pwdBaru.length < 4) { document.getElementById('statusPassword').innerHTML = '<div class="alert-error">❌ Minimal 4 karakter!</div>'; return; }
+  if (pwdBaru !== pwdKonfirmasi) { document.getElementById('statusPassword').innerHTML = '<div class="alert-error">❌ Konfirmasi tidak cocok!</div>'; return; }
+  PASSWORD_GURU = pwdBaru; localStorage.setItem('configPassword', PASSWORD_GURU);
+  document.getElementById('pwdLama').value = ''; document.getElementById('pwdBaru').value = ''; document.getElementById('pwdKonfirmasi').value = '';
+  document.getElementById('pwdStrength').innerHTML = ''; updatePasswordDisplay();
+  document.getElementById('statusPassword').innerHTML = '<div class="alert-success">✅ Password berhasil diubah!</div>';
+  simpanDataDashboardOtomatis(true);
+}
+
+function resetPasswordDefault() {
+  if (!confirm('Yakin ingin reset password ke "guru123"?')) return;
+  PASSWORD_GURU = PASSWORD_DEFAULT; localStorage.setItem('configPassword', PASSWORD_DEFAULT);
+  document.getElementById('pwdLama').value = ''; document.getElementById('pwdBaru').value = ''; document.getElementById('pwdKonfirmasi').value = '';
+  updatePasswordDisplay();
+  document.getElementById('statusPassword').innerHTML = '<div class="alert-success">✅ Password direset ke: <strong>guru123</strong></div>';
+  simpanDataDashboardOtomatis(true);
+}
+
+function simpanWaktu() {
+  const waktu = parseInt(document.getElementById('inputWaktu').value);
+  if (isNaN(waktu) || waktu < 1 || waktu > 180) { document.getElementById('statusWaktu').innerHTML = '<div class="alert-error">❌ Waktu harus 1 - 180 menit!</div>'; return; }
+  configDurasi = waktu; localStorage.setItem('configDurasi', configDurasi);
+  document.getElementById('statusWaktu').innerHTML = '<div class="alert-success">✅ Waktu disimpan: <strong>' + configDurasi + ' menit</strong></div>';
+  updateInfoWaktu();
+}
+
+function simpanJumlahSoal() {
+  const jml = parseInt(document.getElementById('inputJumlahSoal').value);
+  if (isNaN(jml) || jml < 0) { document.getElementById('statusWaktu').innerHTML = '<div class="alert-error">❌ Jumlah soal tidak valid!</div>'; return; }
+  configJumlahSoal = jml; localStorage.setItem('configJumlahSoal', configJumlahSoal);
+  document.getElementById('statusWaktu').innerHTML = '<div class="alert-success">✅ Jumlah soal: <strong>' + (configJumlahSoal === 0 ? 'Semua' : configJumlahSoal) + '</strong></div>';
+  updateInfoWaktu();
+}
+
+function updateInfoWaktu() {
+  const infoBox = document.getElementById('infoWaktu');
+  if (infoBox) infoBox.innerHTML = '⏰ Waktu: <strong>' + configDurasi + ' menit</strong> | Soal: <strong>' + (configJumlahSoal === 0 ? 'Semua' : configJumlahSoal) + '</strong>';
+  const maxInfo = document.getElementById('maxPelanggaranInfo');
+  if (maxInfo) maxInfo.innerText = configMaxPelanggaran;
+}
+
+function importExcel(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const inputElement = event.target;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'});
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]], jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+      const soalBaru = []; let barisMulai = 0;
+      if (jsonData.length > 0) { const firstCell = String(jsonData[0][0] || '').toLowerCase(); if (firstCell.includes('pertanyaan') || firstCell.includes('soal') || firstCell.includes('no')) barisMulai = 1; }
+      for (let i = barisMulai; i < jsonData.length; i++) {
+        const row = jsonData[i]; if (!row || row.length < 7) continue;
+        const pertanyaan = String(row[0] || '').trim(), opsiA = String(row[1] || '').trim(), opsiB = String(row[2] || '').trim(), opsiC = String(row[3] || '').trim(), opsiD = String(row[4] || '').trim(), opsiE = String(row[5] || '').trim(), jawabanBenar = String(row[6] || '').trim().toUpperCase();
+        if (!pertanyaan || !opsiA || !opsiB || !opsiC || !opsiD || !opsiE || !jawabanBenar) continue;
+        let idxJawaban = -1;
+        if (jawabanBenar === 'A' || jawabanBenar === '1') idxJawaban = 0;
+        else if (jawabanBenar === 'B' || jawabanBenar === '2') idxJawaban = 1;
+        else if (jawabanBenar === 'C' || jawabanBenar === '3') idxJawaban = 2;
+        else if (jawabanBenar === 'D' || jawabanBenar === '4') idxJawaban = 3;
+        else if (jawabanBenar === 'E' || jawabanBenar === '5') idxJawaban = 4;
+        else if (jawabanBenar === '0') idxJawaban = 0;
+        if (idxJawaban === -1) continue;
+        soalBaru.push({q: pertanyaan, o: [opsiA, opsiB, opsiC, opsiD, opsiE], a: idxJawaban});
+      }
+      if (soalBaru.length === 0) { document.getElementById('statusImport').innerHTML = '<div class="alert-error">❌ Tidak ada soal valid.</div>'; return; }
+      soalAktif = soalBaru; localStorage.setItem('soalAktif', JSON.stringify(soalBaru));
+      document.getElementById('statusImport').innerHTML = '<div class="alert-success">✅ Berhasil import <strong>' + soalBaru.length + ' soal</strong>.</div>';
+      document.getElementById('jumlahSoalSaatIni').innerText = soalAktif.length; tampilkanPreview(soalBaru);
+      simpanDataDashboardOtomatis(true);
+    } catch (err) { document.getElementById('statusImport').innerHTML = '<div class="alert-error">❌ Error: ' + err.message + '</div>'; }
+    finally { if (inputElement) inputElement.value = ''; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function tampilkanPreview(soal) {
+  const maxPreview = Math.min(5, soal.length);
+  let html = '<div class="preview-box"><strong>Preview ' + maxPreview + ' soal pertama:</strong><br>';
+  for (let i = 0; i < maxPreview; i++) { const s = soal[i], jawabanHuruf = String.fromCharCode(65 + s.a); html += '<div class="preview-item"><strong>' + (i+1) + '.</strong> ' + s.q.substring(0, 60) + '... <em>[Jawaban: ' + jawabanHuruf + ']</em></div>'; }
+  if (soal.length > maxPreview) html += '<div class="preview-item" style="color:var(--text-secondary);">... dan ' + (soal.length - maxPreview) + ' soal lainnya</div>';
+  html += '</div>'; document.getElementById('previewSoal').innerHTML = html;
+}
+
+function downloadTemplate() {
+  const templateData = [['Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Jawaban Benar'], ['Ibu kota Indonesia adalah...', 'Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Bali', 'A'], ['2 + 2 = ...', '3', '4', '5', '6', '7', 'B']];
+  const ws = XLSX.utils.aoa_to_sheet(templateData), wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Soal'); XLSX.writeFile(wb, 'Template_Soal_Ujian.xlsx');
+}
+
+function resetSoalDefault() {
+  if (!confirm('Yakin ingin mengembalikan soal ke default?')) return;
+  soalAktif = SOAL_DEFAULT; localStorage.setItem('soalAktif', JSON.stringify(soalAktif));
+  document.getElementById('jumlahSoalSaatIni').innerText = soalAktif.length;
+  document.getElementById('previewSoal').innerHTML = '';
+  document.getElementById('statusImport').innerHTML = '<div class="alert-success">✅ Soal direset ke default</div>';
+  simpanDataDashboardOtomatis(true);
+}
+
+function simpanAcak() { configAcak = document.getElementById('toggleAcak').checked; localStorage.setItem('configAcak', configAcak); updateStatusAcak(); }
+function simpanAcakOpsi() { configAcakOpsi = document.getElementById('toggleAcakOpsi').checked; localStorage.setItem('configAcakOpsi', configAcakOpsi); updateStatusAcakOpsi(); }
+function simpanEnableReset() { configEnableReset = document.getElementById('toggleEnableReset').checked; localStorage.setItem('configEnableReset', configEnableReset); updateStatusEnableReset(); updateResetButtonVisibility(); }
+function updateStatusAcak() { const status = document.getElementById('statusAcak'); if (configAcak) { status.innerText = 'AKTIF'; status.className = 'status-badge status-on'; } else { status.innerText = 'NONAKTIF'; status.className = 'status-badge status-off'; } }
+function updateStatusAcakOpsi() { const status = document.getElementById('statusAcakOpsi'); if (configAcakOpsi) { status.innerText = 'AKTIF'; status.className = 'status-badge status-on'; } else { status.innerText = 'NONAKTIF'; status.className = 'status-badge status-off'; } }
+function updateStatusEnableReset() { const status = document.getElementById('statusEnableReset'); if (!status) return; if (configEnableReset) { status.innerText = 'AKTIF (Latihan)'; status.className = 'status-badge status-on'; } else { status.innerText = 'NONAKTIF (Mode UJIAN)'; status.className = 'status-badge status-off'; } }
+function updateResetButtonVisibility() {
+  const btnMenu = document.getElementById('btnResetMenuAwal');
+  if (btnMenu) btnMenu.style.display = configEnableReset ? 'inline-flex' : 'none';
+  const btnResult = document.getElementById('btnResetResult');
+  if (btnResult) btnResult.style.display = configEnableReset ? 'inline-flex' : 'none';
+}
+function resetSoalMenuAwal() {
+  if (configEnableReset) {
+    if (confirm('Yakin ingin mereset/mengulang latihan soal? Semua data pengerjaan sebelumnya akan dibersihkan.')) {
+      ['statusUjian','waktuMulai','jawaban','dataSiswa','pelanggaran','jumlahPelanggaran','nilai','benar','autoSubmit','waktuSelesai','soalUrutan','urutanOpsiPerSoal','waktuJawaban','pendingSheetPayload','submissionId','sheetSent'].forEach(k => localStorage.removeItem(k));
+      statusUjian = null; dataSiswa = null; jawaban = {}; pelanggaran = []; jumlahPelanggaran = 0;
+      alert('✅ Latihan soal berhasil direset! Silakan mulai ujian/latihan kembali.');
+      location.reload();
+    }
+  } else {
+    bukaModalReset();
+  }
+}
+
+function acakArray(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [result[i], result[j]] = [result[j], result[i]]; }
+  return result;
+}
+
+function simpanMaxPelanggaran() {
+  const max = parseInt(document.getElementById('inputMaxPelanggaran').value);
+  if (isNaN(max) || max < 1 || max > 20) { document.getElementById('statusMaxPelanggaran').innerHTML = '<div class="alert-error">❌ Batas harus antara 1 - 20!</div>'; return; }
+  configMaxPelanggaran = max; localStorage.setItem('configMaxPelanggaran', configMaxPelanggaran);
+  document.getElementById('statusMaxPelanggaran').innerHTML = '<div class="alert-success">✅ Batas pelanggaran disimpan: <strong>' + configMaxPelanggaran + ' kali</strong>.</div>';
+  updateInfoWaktu();
+}
+
+function resetMaxPelanggaran() {
+  configMaxPelanggaran = 5; localStorage.setItem('configMaxPelanggaran', 5);
+  document.getElementById('inputMaxPelanggaran').value = 5;
+  document.getElementById('statusMaxPelanggaran').innerHTML = '<div class="alert-success">✅ Batas pelanggaran direset ke: <strong>5 kali</strong></div>';
+  updateInfoWaktu();
+  simpanDataDashboardOtomatis(true);
+}
+
+function getPengaturanCetak() {
+  return {
+    font: document.getElementById('cetakFont').value, kertas: document.getElementById('cetakKertas').value,
+    ukuranFont: document.getElementById('cetakUkuranFont').value, spasi: document.getElementById('cetakSpasi').value,
+    marginTop: parseFloat(document.getElementById('cetakMarginAtas').value) || 1.5,
+    marginBottom: parseFloat(document.getElementById('cetakMarginBawah').value) || 1.5,
+    marginLeft: parseFloat(document.getElementById('cetakMarginKiri').value) || 1.5,
+    marginRight: parseFloat(document.getElementById('cetakMarginKanan').value) || 1.5,
+    kunci: document.getElementById('cetakKunci').value, acak: document.getElementById('cetakAcak').value === 'ya'
+  };
+}
+
+function resetPengaturanCetak() {
+  configCetakFont = "'Times New Roman', serif";
+  configCetakKertas = "F4";
+  configCetakUkuranFont = "12";
+  configCetakSpasi = "1";
+  configCetakMarginAtas = "1.5";
+  configCetakMarginBawah = "1.5";
+  configCetakMarginKiri = "1.5";
+  configCetakMarginKanan = "1.5";
+  configCetakKunci = "akhir";
+  configCetakAcak = "tidak";
+  localStorage.setItem('configCetakFont', configCetakFont);
+  localStorage.setItem('configCetakKertas', configCetakKertas);
+  localStorage.setItem('configCetakUkuranFont', configCetakUkuranFont);
+  localStorage.setItem('configCetakSpasi', configCetakSpasi);
+  localStorage.setItem('configCetakMarginAtas', configCetakMarginAtas);
+  localStorage.setItem('configCetakMarginBawah', configCetakMarginBawah);
+  localStorage.setItem('configCetakMarginKiri', configCetakMarginKiri);
+  localStorage.setItem('configCetakMarginKanan', configCetakMarginKanan);
+  localStorage.setItem('configCetakKunci', configCetakKunci);
+  localStorage.setItem('configCetakAcak', configCetakAcak);
+  document.getElementById('cetakFont').value = configCetakFont;
+  document.getElementById('cetakKertas').value = configCetakKertas;
+  document.getElementById('cetakUkuranFont').value = configCetakUkuranFont;
+  document.getElementById('cetakSpasi').value = configCetakSpasi;
+  document.getElementById('cetakMarginAtas').value = configCetakMarginAtas;
+  document.getElementById('cetakMarginBawah').value = configCetakMarginBawah;
+  document.getElementById('cetakMarginKiri').value = configCetakMarginKiri;
+  document.getElementById('cetakMarginKanan').value = configCetakMarginKanan;
+  document.getElementById('cetakKunci').value = configCetakKunci;
+  document.getElementById('cetakAcak').value = configCetakAcak;
+  document.getElementById('previewCetakArea').innerHTML = '';
+}
+
+// === GENERATE SOAL HTML DENGAN RATA KANAN-KIRI (JUSTIFY) ===
+function generateSoalHTML(daftarSoal, setting, forPrint = false) {
+  let soalHTML = '';
+  daftarSoal.forEach((soalIdx, i) => {
+    const s = soalAktif[soalIdx];
+    soalHTML += '<div class="soal-item">';
+    // Pertanyaan dengan text-align: justify
+    soalHTML += '<p style="text-align: justify;"><strong>' + (i+1) + '.</strong> ' + s.q + '</p>';
+    soalHTML += '<div class="opsi">';
+    s.o.forEach((opt, j) => {
+      const huruf = String.fromCharCode(65+j);
+      // Opsi dengan text-align: justify
+      soalHTML += '<div class="opsi-item"><span class="opsi-huruf">' + huruf + '.</span><span class="opsi-teks" style="text-align: justify;">' + opt + '</span></div>';
+    });
+    soalHTML += '</div></div>';
+  });
+  return soalHTML;
+}
+
+function generateKunciHTML(daftarSoal, setting) {
+  const kunciItems = [];
+  daftarSoal.forEach((soalIdx, i) => { const s = soalAktif[soalIdx]; kunciItems.push(String(i+1).padStart(2,' ') + '. ' + String.fromCharCode(65 + s.a)); });
+  let kunciGridHTML = '<table style="width:100%; border-collapse:collapse; margin-top:10px;">';
+  for (let i = 0; i < kunciItems.length; i += 5) {
+    kunciGridHTML += '<tr>';
+    for (let j = 0; j < 5; j++) {
+      if (i + j < kunciItems.length) kunciGridHTML += '<td style="padding:3px 8px; border:1px solid #ccc; font-size:' + setting.ukuranFont + 'pt; text-align:center;">' + kunciItems[i+j] + '</td>';
+      else kunciGridHTML += '<td></td>';
+    }
+    kunciGridHTML += '</tr>';
+  }
+  kunciGridHTML += '</table>';
+  return kunciGridHTML;
+}
+
+function generateHTMLCetak(setting, forPrint = false) {
+  const ukuran = UKURAN_KERTAS[setting.kertas] || UKURAN_KERTAS['F4'];
+  let daftarSoal = [...Array(soalAktif.length).keys()];
+  if (setting.acak) daftarSoal = acakArray(daftarSoal);
+  if (configJumlahSoal > 0 && configJumlahSoal < daftarSoal.length) daftarSoal = daftarSoal.slice(0, configJumlahSoal);
+  const soalHTML = generateSoalHTML(daftarSoal, setting, forPrint);
+  const kunciGridHTML = generateKunciHTML(daftarSoal, setting);
+  const tanggal = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const printStyles = forPrint ? '@page { size: ' + ukuran.width + 'cm ' + ukuran.height + 'cm; margin: ' + setting.marginTop + 'cm ' + setting.marginRight + 'cm ' + setting.marginBottom + 'cm ' + setting.marginLeft + 'cm; } body { margin: 0; padding: 0; } .no-print { display: none !important; } .page-content { padding: 0; font-family: ' + setting.font + '; font-size: ' + setting.ukuranFont + 'pt; line-height: ' + setting.spasi + '; color: #000; }' : '.page-content { font-family: ' + setting.font + '; font-size: ' + setting.ukuranFont + 'pt; line-height: ' + setting.spasi + '; color: #000; }';
+  return '<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Cetak Soal - ' + configJudul + '</title><style>' + printStyles + ' body { background: ' + (forPrint ? 'white' : '#e5e7eb') + '; margin: 0; padding: ' + (forPrint ? '0' : '20px') + '; } .page { background: white; color: black; ' + (forPrint ? '' : 'width: ' + ukuran.width + 'cm; min-height: ' + ukuran.height + 'cm; padding: ' + setting.marginTop + 'cm ' + setting.marginRight + 'cm ' + setting.marginBottom + 'cm ' + setting.marginLeft + 'cm; margin: 0 auto 20px auto; box-shadow: 0 2px 8px rgba(0,0,0,0.2);') + ' } .header { text-align: center; margin-bottom: 20px; } .header h2 { margin: 0 0 5px 0; font-size: ' + (parseInt(setting.ukuranFont) + 2) + 'pt; text-transform: uppercase; font-weight: bold; } .header h3 { margin: 0 0 15px 0; font-size: ' + (parseInt(setting.ukuranFont) + 1) + 'pt; font-weight: normal; } .header .tanggal { font-size: ' + setting.ukuranFont + 'pt; margin-bottom: 15px; } .info-siswa { margin-bottom: 20px; font-size: ' + setting.ukuranFont + 'pt; } .info-siswa div { margin-bottom: 5px; display: flex; } .info-siswa .label { width: 120px; font-weight: normal; } .info-siswa .colon { width: 15px; } .info-siswa .line { flex: 1; border-bottom: 1px solid #000; } .judul-soal { text-align: center; font-weight: bold; margin: 20px 0 15px 0; font-size: ' + (parseInt(setting.ukuranFont) + 1) + 'pt; text-transform: uppercase; text-decoration: underline; } .soal-item { margin-bottom: 15px; page-break-inside: avoid; } .soal-item > p { margin: 0 0 6px 0; font-weight: 600; text-align: justify; } .opsi { margin-left: 20px; } .opsi-item { display: flex; margin-bottom: 4px; align-items: baseline; } .opsi-huruf { width: 25px; font-weight: bold; flex-shrink: 0; } .opsi-teks { flex: 1; word-wrap: break-word; text-align: justify; } .kunci-jawaban { margin-top: 30px; border-top: 2px solid #000; padding-top: 15px; page-break-before: always; } .kunci-jawaban h3 { text-align: center; margin: 0 0 15px 0; font-weight: bold; text-transform: uppercase; text-decoration: underline; } .toolbar { position: fixed; top: 0; left: 0; right: 0; background: #1f2937; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.3); } .toolbar button { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: 8px; } .toolbar button:hover { background: #2563eb; } .toolbar button.close { background: #dc2626; } .toolbar button.close:hover { background: #b91c1c; } @media print { .no-print { display: none !important; } body { background: white; } }</style></head><body>' + (!forPrint ? '<div class="toolbar no-print"><div><strong>📄 Preview Cetak</strong> | ' + setting.kertas + ' | ' + setting.ukuranFont + 'pt | Spasi ' + setting.spasi + '</div><div><button onclick="window.print()">🖨️ Cetak / Simpan PDF</button><button class="close" onclick="window.close()">✖ Tutup</button></div></div><div style="height: 60px;"></div>' : '') + '<div class="page"><div class="page-content"><div class="header"><h2>' + configJudul + '</h2><h3>' + configSubJudul + '</h3><div class="tanggal">Hari/Tanggal: ' + tanggal + '</div></div><div class="info-siswa"><div><span class="label">Nama</span><span class="colon">:</span><span class="line"></span></div><div><span class="label">Kelas</span><span class="colon">:</span><span class="line"></span></div><div><span class="label">Nomor Absen</span><span class="colon">:</span><span class="line"></span></div></div><div class="judul-soal">Soal Pilihan Ganda</div><div class="soal-container">' + soalHTML + '</div>' + (setting.kunci === 'akhir' ? '<div class="kunci-jawaban"><h3>Kunci Jawaban</h3>' + kunciGridHTML + '</div>' : '') + '</div></div></body></html>';
+}
+
+function previewCetak() {
+  const setting = getPengaturanCetak(), ukuran = UKURAN_KERTAS[setting.kertas];
+  let daftarSoal = [...Array(soalAktif.length).keys()];
+  if (setting.acak) daftarSoal = acakArray(daftarSoal);
+  if (configJumlahSoal > 0 && configJumlahSoal < daftarSoal.length) daftarSoal = daftarSoal.slice(0, configJumlahSoal);
+  const soalHTML = generateSoalHTML(daftarSoal, setting, false);
+  let kunciHTML = '';
+  if (setting.kunci === 'akhir') kunciHTML = generateKunciHTML(daftarSoal, setting);
+  const tanggal = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const previewHTML = '<div class="print-preview-container"><div class="print-preview-page" style="font-family: ' + setting.font + '; font-size: ' + setting.ukuranFont + 'pt; line-height: ' + setting.spasi + '; padding: ' + setting.marginTop + 'cm ' + setting.marginRight + 'cm ' + setting.marginBottom + 'cm ' + setting.marginLeft + 'cm; width: ' + ukuran.width + 'cm; min-height: ' + (ukuran.height * 0.3) + 'cm;"><div style="text-align:center; margin-bottom:15px;"><h2 style="margin:0 0 5px 0; font-size:' + (parseInt(setting.ukuranFont) + 2) + 'pt; text-transform:uppercase;">' + configJudul + '</h2><h3 style="margin:0 0 10px 0; font-size:' + (parseInt(setting.ukuranFont) + 1) + 'pt; font-weight:normal;">' + configSubJudul + '</h3><div style="font-size:' + setting.ukuranFont + 'pt;">Hari/Tanggal: ' + tanggal + '</div></div><div style="margin-bottom:15px; font-size:' + setting.ukuranFont + 'pt;"><div style="margin-bottom:5px; display:flex;"><span style="width:100px;">Nama</span><span style="width:10px;">:</span><span style="flex:1; border-bottom:1px solid #000;"></span></div><div style="margin-bottom:5px; display:flex;"><span style="width:100px;">Kelas</span><span style="width:10px;">:</span><span style="flex:1; border-bottom:1px solid #000;"></span></div><div style="margin-bottom:5px; display:flex;"><span style="width:100px;">Nomor Absen</span><span style="width:10px;">:</span><span style="flex:1; border-bottom:1px solid #000;"></span></div></div><div style="text-align:center; font-weight:bold; margin:15px 0; font-size:' + (parseInt(setting.ukuranFont) + 1) + 'pt; text-transform:uppercase; text-decoration:underline;">Soal Pilihan Ganda</div>' + soalHTML + (setting.kunci === 'akhir' ? '<div style="margin-top:20px; border-top:2px solid #000; padding-top:10px;"><h3 style="text-align:center; margin:0 0 10px 0; font-weight:bold; text-transform:uppercase; text-decoration:underline;">Kunci Jawaban</h3>' + kunciHTML + '</div>' : '') + '</div><div style="text-align:center; margin-top:10px; font-size:12px; color:var(--text-secondary);"> Preview halaman 1 | Total ' + daftarSoal.length + ' soal | ' + setting.kertas + ' (' + ukuran.width + '×' + ukuran.height + ' cm)</div></div>';
+  document.getElementById('previewCetakArea').innerHTML = previewHTML;
+}
+
+function cetakSoal() {
+  if (soalAktif.length === 0) { alert('❌ Tidak ada soal untuk dicetak!'); return; }
+  const setting = getPengaturanCetak(), html = generateHTMLCetak(setting, true);
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) { alert('❌ Popup diblokir! Izinkan popup untuk situs ini.'); return; }
+  printWindow.document.write(html); printWindow.document.close();
+  printWindow.onload = function() { setTimeout(() => { printWindow.focus(); printWindow.print(); }, 500); };
+}
+
+// === EXPORT KE WORD MENGGUNAKAN FORMAT RTF DENGAN RATA KANAN-KIRI (JUSTIFY) ===
+function exportToWord() {
+  if (soalAktif.length === 0) { alert('❌ Tidak ada soal untuk diexport!'); return; }
+  const setting = getPengaturanCetak();
+  let daftarSoal = [...Array(soalAktif.length).keys()];
+  if (setting.acak) daftarSoal = acakArray(daftarSoal);
+  if (configJumlahSoal > 0 && configJumlahSoal < daftarSoal.length) daftarSoal = daftarSoal.slice(0, configJumlahSoal);
+
+  function escapeRtf(text) { return String(text).replace(/\\/g, '\\\\').replace(/\{/g, '\\{').replace(/\}/g, '\\}').replace(/\n/g, '\\line '); }
+  function toRtfUnicode(text) {
+    let result = '';
+    for (let i = 0; i < text.length; i++) { const code = text.charCodeAt(i); if (code > 127) result += '\\u' + code + '?'; else result += text[i]; }
+    return result;
+  }
+
+  let rtf = '{\\rtf1\\utf8\\deff0\n';
+  rtf += '{\\fonttbl{\\f0\\fnil\\fcharset0 Arial;}}\n';
+  rtf += '{\\colortbl;\\red0\\green0\\blue0;}\n';
+  rtf += '\\paperw11906\\paperh16838\\margl1440\\margr1440\\margt1440\\margb1440\n';
+  const fontSizeTwips = parseInt(setting.ukuranFont) * 2, titleSizeTwips = (parseInt(setting.ukuranFont) + 4) * 2;
+  
+  // Judul (center, bold)
+  rtf += '\\pard\\qc\\sb200\\sa200\n';
+  rtf += '{\\f0\\fs' + titleSizeTwips + '\\b ' + toRtfUnicode(escapeRtf(configJudul)) + '}\\par\n';
+  // Subjudul (center)
+  rtf += '\\pard\\qc\\sb100\\sa200\n';
+  rtf += '{\\f0\\fs' + fontSizeTwips + ' ' + toRtfUnicode(escapeRtf(configSubJudul)) + '}\\par\n';
+  // Garis pemisah
+  rtf += '\\pard\\sb200\\sa200\n';
+  rtf += '\\pard\\brdrb\\brdrs\\brdrw10\\brsp20\\sb100\\sa100\\par\n';
+  
+  // Soal dengan RATA KANAN-KIRI (\\qj = justify)
+  daftarSoal.forEach((soalIdx, i) => {
+    const s = soalAktif[soalIdx];
+    // Pertanyaan: justify + bold
+    rtf += '\\pard\\qj\\sb200\\sa100\n';
+    rtf += '{\\f0\\fs' + fontSizeTwips + '\\b ' + (i+1) + '. ' + toRtfUnicode(escapeRtf(s.q)) + '}\\par\n';
+    // Opsi jawaban: justify + regular, dengan indent
+    s.o.forEach((opt, j) => {
+      const huruf = String.fromCharCode(65+j);
+      rtf += '\\pard\\qj\\li720\\sb50\\sa50\n';
+      rtf += '{\\f0\\fs' + fontSizeTwips + ' ' + huruf + '. ' + toRtfUnicode(escapeRtf(opt)) + '}\\par\n';
+    });
+    rtf += '\\pard\\sb100\\sa100\\par\n';
+  });
+  rtf += '}';
+
+  const blob = new Blob([rtf], { type: 'application/rtf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'Soal_Ujian_' + configJudul.replace(/\s+/g, '_') + '.rtf';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('✅ File berhasil diexport dalam format RTF dengan format RATA KANAN-KIRI (justify).\n\nFile ini bisa dibuka di:\n• Google Docs\n• Microsoft Word\n• LibreOffice Writer\n• Aplikasi pengolah kata lainnya');
+}
+
+function exportToExcel() {
+  if (soalAktif.length === 0) { alert('❌ Tidak ada soal untuk diexport!'); return; }
+  const setting = getPengaturanCetak();
+  let daftarSoal = [...Array(soalAktif.length).keys()];
+  if (setting.acak) daftarSoal = acakArray(daftarSoal);
+  if (configJumlahSoal > 0 && configJumlahSoal < daftarSoal.length) daftarSoal = daftarSoal.slice(0, configJumlahSoal);
+  const data = [];
+  data.push(['No', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Kunci Jawaban']);
+  daftarSoal.forEach((soalIdx, i) => { const s = soalAktif[soalIdx], kunci = String.fromCharCode(65 + s.a); data.push([i + 1, s.q, s.o[0], s.o[1], s.o[2], s.o[3], s.o[4], kunci]); });
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch: 5}, {wch: 60}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}];
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Soal Ujian');
+  XLSX.writeFile(wb, 'Soal_Ujian_' + configJudul.replace(/\s+/g, '_') + '.xlsx');
+}
+
+function resetDataSiswa() {
+  if (!confirm('Yakin ingin menghapus semua data siswa?')) return;
+  ['statusUjian','waktuMulai','jawaban','dataSiswa','pelanggaran','jumlahPelanggaran','nilai','benar','autoSubmit','waktuSelesai','soalUrutan','urutanOpsiPerSoal','waktuJawaban','pendingSheetPayload','submissionId','sheetSent'].forEach(k => localStorage.removeItem(k));
+  document.getElementById('statusResetSiswa').innerHTML = '<div class="alert-success">✅ Semua data siswa berhasil dihapus</div>';
+  setTimeout(() => { document.getElementById('statusResetSiswa').innerHTML = ''; }, 3000);
+}
+
+function hapusDataTerEmbed() {
+  if (!confirm('Yakin ingin menghapus semua data ter-embed dan data siswa? Semua bekas data ujian akan dibersihkan.')) return;
+  ['statusUjian','waktuMulai','jawaban','dataSiswa','pelanggaran','jumlahPelanggaran','nilai','benar','autoSubmit','waktuSelesai','soalUrutan','urutanOpsiPerSoal','waktuJawaban','pendingSheetPayload','submissionId','sheetSent'].forEach(k => localStorage.removeItem(k));
+  statusUjian = null; dataSiswa = null; jawaban = {}; pelanggaran = []; jumlahPelanggaran = 0; soalUrutan = []; urutanOpsiPerSoal = {}; waktuJawaban = {};
+  ['nama','nomor','kelas','tokenUjian'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['soalContainer','resultArea','watermarkOverlay'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+  document.getElementById('statusResetSiswa').innerHTML = '<div class="alert-success">✅ Data Ter-Embed berhasil dihapus. File HTML bersih dari semua bekas data siswa.</div>';
+  setTimeout(() => { document.getElementById('statusResetSiswa').innerHTML = ''; }, 3000);
+}
+
+function simpanSemuaPengaturan() {
+  try {
+    const judul = document.getElementById('inputJudul').value.trim();
+    const subJudul = document.getElementById('inputSubJudul').value.trim();
+    const token = document.getElementById('inputToken').value.trim();
+    if (judul && token) {
+      configJudul = judul; configSubJudul = subJudul; configToken = token;
+      localStorage.setItem('configJudul', configJudul);
+      localStorage.setItem('configSubJudul', configSubJudul);
+      localStorage.setItem('configToken', configToken);
+      updateJudulDiSemuaTempat();
+    }
+
+    const pwdLama = document.getElementById('pwdLama').value;
+    const pwdBaru = document.getElementById('pwdBaru').value;
+    const pwdKonfirmasi = document.getElementById('pwdKonfirmasi').value;
+    if (pwdBaru && pwdBaru.length >= 4 && pwdBaru === pwdKonfirmasi && pwdLama === PASSWORD_GURU) {
+      PASSWORD_GURU = pwdBaru;
+      localStorage.setItem('configPassword', PASSWORD_GURU);
+      document.getElementById('pwdLama').value = '';
+      document.getElementById('pwdBaru').value = '';
+      document.getElementById('pwdKonfirmasi').value = '';
+      updatePasswordDisplay();
+    }
+
+    const waktu = parseInt(document.getElementById('inputWaktu').value);
+    if (!isNaN(waktu) && waktu >= 1 && waktu <= 180) {
+      configDurasi = waktu;
+      localStorage.setItem('configDurasi', configDurasi);
+    }
+    const jml = parseInt(document.getElementById('inputJumlahSoal').value);
+    if (!isNaN(jml) && jml >= 0) {
+      configJumlahSoal = jml;
+      localStorage.setItem('configJumlahSoal', configJumlahSoal);
+    }
+    updateInfoWaktu();
+
+    configAcak = document.getElementById('toggleAcak').checked;
+    configAcakOpsi = document.getElementById('toggleAcakOpsi').checked;
+    configEnableReset = document.getElementById('toggleEnableReset').checked;
+    localStorage.setItem('configAcak', configAcak);
+    localStorage.setItem('configAcakOpsi', configAcakOpsi);
+    localStorage.setItem('configEnableReset', configEnableReset);
+    updateStatusAcak(); updateStatusAcakOpsi(); updateStatusEnableReset(); updateResetButtonVisibility();
+
+    const maxScore = parseInt(document.getElementById('inputNilaiMaksimal').value);
+    const kkm = parseInt(document.getElementById('inputNilaiKKM').value);
+    const tampil = document.getElementById('selectTampilNilai').value === 'true';
+    if (!isNaN(maxScore) && maxScore >= 10 && !isNaN(kkm) && kkm <= maxScore) {
+      configNilaiMaksimal = maxScore;
+      configNilaiKKM = kkm;
+      configTampilNilai = tampil;
+      localStorage.setItem('configNilaiMaksimal', configNilaiMaksimal);
+      localStorage.setItem('configNilaiKKM', configNilaiKKM);
+      localStorage.setItem('configTampilNilai', configTampilNilai);
+    }
+
+    const maxPel = parseInt(document.getElementById('inputMaxPelanggaran').value);
+    if (!isNaN(maxPel) && maxPel >= 1 && maxPel <= 20) {
+      configMaxPelanggaran = maxPel;
+      localStorage.setItem('configMaxPelanggaran', configMaxPelanggaran);
+    }
+
+    if (document.getElementById('cetakFont')) {
+      configCetakFont = document.getElementById('cetakFont').value;
+      configCetakKertas = document.getElementById('cetakKertas').value;
+      configCetakUkuranFont = document.getElementById('cetakUkuranFont').value;
+      configCetakSpasi = document.getElementById('cetakSpasi').value;
+      configCetakMarginAtas = document.getElementById('cetakMarginAtas').value;
+      configCetakMarginBawah = document.getElementById('cetakMarginBawah').value;
+      configCetakMarginKiri = document.getElementById('cetakMarginKiri').value;
+      configCetakMarginKanan = document.getElementById('cetakMarginKanan').value;
+      configCetakKunci = document.getElementById('cetakKunci').value;
+      configCetakAcak = document.getElementById('cetakAcak').value;
+      localStorage.setItem('configCetakFont', configCetakFont);
+      localStorage.setItem('configCetakKertas', configCetakKertas);
+      localStorage.setItem('configCetakUkuranFont', configCetakUkuranFont);
+      localStorage.setItem('configCetakSpasi', configCetakSpasi);
+      localStorage.setItem('configCetakMarginAtas', configCetakMarginAtas);
+      localStorage.setItem('configCetakMarginBawah', configCetakMarginBawah);
+      localStorage.setItem('configCetakMarginKiri', configCetakMarginKiri);
+      localStorage.setItem('configCetakMarginKanan', configCetakMarginKanan);
+      localStorage.setItem('configCetakKunci', configCetakKunci);
+      localStorage.setItem('configCetakAcak', configCetakAcak);
+    }
+
+    const sheetUrl = document.getElementById('inputGoogleSheet').value.trim();
+    configGoogleSheetUrl = sheetUrl;
+    localStorage.setItem('configGoogleSheetUrl', configGoogleSheetUrl);
+
+    localStorage.setItem('soalAktif', JSON.stringify(soalAktif));
+
+    const statusMap = {
+      'statusJudul': '<div class="alert-success">✅ Judul & Token tersimpan</div>',
+      'statusWaktu': '<div class="alert-success">✅ Waktu & Jumlah soal tersimpan</div>',
+      'statusPengaturanNilai': '<div class="alert-success">✅ Score & KKM tersimpan</div>',
+      'statusMaxPelanggaran': '<div class="alert-success">✅ Batas pelanggaran tersimpan</div>',
+      'statusGoogleSheet': '<div class="alert-success">✅ Google Sheet URL tersimpan</div>'
+    };
+    Object.keys(statusMap).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = statusMap[id];
+    });
+
+    const statusElem = document.getElementById('statusSimpanSemua');
+    if (statusElem) {
+      statusElem.innerHTML = '<div class="alert-success">✅ <strong>SEMUA PENGATURAN BERHASIL DISIMPAN!</strong><br>Seluruh perubahan telah tersimpan di browser Anda.<br>📌 Klik <strong>"Download HTML Terbaru"</strong> jika ingin membagikan file HTML terkini ke siswa.</div>';
+    }
+    const payload = kumpulkanSemuaDataDashboard();
+    localStorage.setItem('pendingDashboardSync', JSON.stringify(payload));
+    syncDashboardGuru(payload);
+  } catch (err) {
+    const statusElem = document.getElementById('statusSimpanSemua');
+    if (statusElem) {
+      statusElem.innerHTML = '<div class="alert-error">❌ Gagal menyimpan pengaturan: ' + err.message + '</div>';
+    }
+  }
+}
+
+function incrementVersion(v) { const parts = v.split('.').map(Number); parts[parts.length - 1]++; return parts.join('.'); }
+
+function simpanPermanenKeHTML() {
+  simpanSemuaPengaturan();
+  if (!confirm('File HTML baru akan didownload dengan semua perubahan saat ini.\n\nSetelah download, ganti file HTML lama di hosting dengan file baru ini.\n\nLanjutkan?')) return;
+  try {
+    const savedState = { menuAwal: document.getElementById('menuAwal').style.display, identityForm: document.getElementById('identityForm').style.display, dashboardGuru: document.getElementById('dashboardGuru').style.display, quizArea: document.getElementById('quizArea').style.display, resultArea: document.getElementById('resultArea').style.display, loginModal: document.getElementById('loginModal').style.display, resetModal: document.getElementById('resetModal').style.display, violationOverlay: document.getElementById('violationOverlay').style.display };
+    document.getElementById('menuAwal').style.display = 'block'; document.getElementById('identityForm').style.display = 'none'; document.getElementById('dashboardGuru').style.display = 'none'; document.getElementById('quizArea').style.display = 'none'; document.getElementById('resultArea').style.display = 'none'; document.getElementById('loginModal').style.display = 'none'; document.getElementById('resetModal').style.display = 'none'; document.getElementById('violationOverlay').style.display = 'none';
+    ['statusJudul','statusPassword','statusWaktu','statusImport','statusPengaturanNilai','statusMaxPelanggaran','statusGoogleSheet','statusResetSiswa','statusSimpanPermanen','statusSimpanSemua'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+    let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    document.getElementById('menuAwal').style.display = savedState.menuAwal; document.getElementById('identityForm').style.display = savedState.identityForm; document.getElementById('dashboardGuru').style.display = savedState.dashboardGuru; document.getElementById('quizArea').style.display = savedState.quizArea; document.getElementById('resultArea').style.display = savedState.resultArea; document.getElementById('loginModal').style.display = savedState.loginModal; document.getElementById('resetModal').style.display = savedState.resetModal; document.getElementById('violationOverlay').style.display = savedState.violationOverlay;
+    const newVersion = incrementVersion(HTML_VERSION);
+    localStorage.setItem('htmlVersion', newVersion);
+    const syncInputValue = (id, val) => { const el = document.getElementById(id); if (el) { el.value = val; el.setAttribute('value', val); } };
+    const syncCheckbox = (id, checked) => { const el = document.getElementById(id); if (el) { el.checked = checked; if (checked) el.setAttribute('checked', 'checked'); else el.removeAttribute('checked'); } };
+    const syncSelect = (id, val) => { const el = document.getElementById(id); if (el) { el.value = val; Array.from(el.options).forEach(opt => { if (opt.value === String(val)) opt.setAttribute('selected', 'selected'); else opt.removeAttribute('selected'); }); } };
+
+    syncInputValue('inputJudul', configJudul);
+    syncInputValue('inputSubJudul', configSubJudul);
+    syncInputValue('inputToken', configToken);
+    syncInputValue('inputWaktu', configDurasi);
+    syncInputValue('inputJumlahSoal', configJumlahSoal);
+    syncCheckbox('toggleAcak', configAcak);
+    syncCheckbox('toggleAcakOpsi', configAcakOpsi);
+    syncCheckbox('toggleEnableReset', configEnableReset);
+    syncInputValue('inputNilaiMaksimal', configNilaiMaksimal);
+    syncInputValue('inputNilaiKKM', configNilaiKKM);
+    syncSelect('selectTampilNilai', configTampilNilai ? "true" : "false");
+    syncInputValue('inputMaxPelanggaran', configMaxPelanggaran);
+    syncInputValue('inputGoogleSheet', configGoogleSheetUrl);
+    syncSelect('cetakFont', configCetakFont);
+    syncSelect('cetakKertas', configCetakKertas);
+    syncSelect('cetakUkuranFont', configCetakUkuranFont);
+    syncSelect('cetakSpasi', configCetakSpasi);
+    syncInputValue('cetakMarginAtas', configCetakMarginAtas);
+    syncInputValue('cetakMarginBawah', configCetakMarginBawah);
+    syncInputValue('cetakMarginKiri', configCetakMarginKiri);
+    syncInputValue('cetakMarginKanan', configCetakMarginKanan);
+    syncSelect('cetakKunci', configCetakKunci);
+    syncSelect('cetakAcak', configCetakAcak);
+
+    const newConfigBlock = '// __CONFIG_START__\nconst JUDUL_DEFAULT = ' + JSON.stringify(configJudul) + ';\nconst SUBJUDUL_DEFAULT = ' + JSON.stringify(configSubJudul) + ';\nconst PASSWORD_DEFAULT = ' + JSON.stringify(PASSWORD_GURU) + ';\nconst TOKEN_DEFAULT = ' + JSON.stringify(configToken) + ';\nconst GOOGLE_SHEET_URL_DEFAULT = ' + JSON.stringify(configGoogleSheetUrl) + ';\nconst DURASI_DEFAULT = ' + JSON.stringify(configDurasi) + ';\nconst JUMLAH_SOAL_DEFAULT = ' + JSON.stringify(configJumlahSoal) + ';\nconst ACAK_DEFAULT = ' + JSON.stringify(configAcak) + ';\nconst ACAK_OPSI_DEFAULT = ' + JSON.stringify(configAcakOpsi) + ';\nconst ENABLE_RESET_DEFAULT = ' + JSON.stringify(configEnableReset) + ';\nconst MAX_PELANGGARAN_DEFAULT = ' + JSON.stringify(configMaxPelanggaran) + ';\nconst NILAI_MAKSIMAL_DEFAULT = ' + JSON.stringify(configNilaiMaksimal) + ';\nconst NILAI_KKM_DEFAULT = ' + JSON.stringify(configNilaiKKM) + ';\nconst TAMPIL_NILAI_DEFAULT = ' + JSON.stringify(configTampilNilai) + ';\nconst CETAK_FONT_DEFAULT = ' + JSON.stringify(configCetakFont) + ';\nconst CETAK_KERTAS_DEFAULT = ' + JSON.stringify(configCetakKertas) + ';\nconst CETAK_UKURAN_FONT_DEFAULT = ' + JSON.stringify(configCetakUkuranFont) + ';\nconst CETAK_SPASI_DEFAULT = ' + JSON.stringify(configCetakSpasi) + ';\nconst CETAK_MARGIN_ATAS_DEFAULT = ' + JSON.stringify(configCetakMarginAtas) + ';\nconst CETAK_MARGIN_BAWAH_DEFAULT = ' + JSON.stringify(configCetakMarginBawah) + ';\nconst CETAK_MARGIN_KIRI_DEFAULT = ' + JSON.stringify(configCetakMarginKiri) + ';\nconst CETAK_MARGIN_KANAN_DEFAULT = ' + JSON.stringify(configCetakMarginKanan) + ';\nconst CETAK_KUNCI_DEFAULT = ' + JSON.stringify(configCetakKunci) + ';\nconst CETAK_ACAK_DEFAULT = ' + JSON.stringify(configCetakAcak) + ';\nconst SOAL_DEFAULT = ' + JSON.stringify(soalAktif) + ';\n// __CONFIG_END__';
+    const newRuntimeConfigBlock = '// __RUNTIME_CONFIG_START__\nlet configDurasi = parseInt(localStorage.getItem(\'configDurasi\') || (typeof DURASI_DEFAULT !== \'undefined\' ? DURASI_DEFAULT : ' + configDurasi + '));\nlet configJumlahSoal = parseInt(localStorage.getItem(\'configJumlahSoal\') || (typeof JUMLAH_SOAL_DEFAULT !== \'undefined\' ? JUMLAH_SOAL_DEFAULT : ' + configJumlahSoal + '));\nlet configAcak = localStorage.getItem(\'configAcak\') !== null ? localStorage.getItem(\'configAcak\') === \'true\' : (typeof ACAK_DEFAULT !== \'undefined\' ? ACAK_DEFAULT : ' + configAcak + ');\nlet configAcakOpsi = localStorage.getItem(\'configAcakOpsi\') !== null ? localStorage.getItem(\'configAcakOpsi\') === \'true\' : (typeof ACAK_OPSI_DEFAULT !== \'undefined\' ? ACAK_OPSI_DEFAULT : ' + configAcakOpsi + ');\nlet configEnableReset = localStorage.getItem(\'configEnableReset\') !== null ? localStorage.getItem(\'configEnableReset\') === \'true\' : (typeof ENABLE_RESET_DEFAULT !== \'undefined\' ? ENABLE_RESET_DEFAULT : ' + configEnableReset + ');\nlet configMaxPelanggaran = parseInt(localStorage.getItem(\'configMaxPelanggaran\') || (typeof MAX_PELANGGARAN_DEFAULT !== \'undefined\' ? MAX_PELANGGARAN_DEFAULT : ' + configMaxPelanggaran + '));\nlet configNilaiMaksimal = parseInt(localStorage.getItem(\'configNilaiMaksimal\') || (typeof NILAI_MAKSIMAL_DEFAULT !== \'undefined\' ? NILAI_MAKSIMAL_DEFAULT : ' + configNilaiMaksimal + '));\nlet configNilaiKKM = parseInt(localStorage.getItem(\'configNilaiKKM\') || (typeof NILAI_KKM_DEFAULT !== \'undefined\' ? NILAI_KKM_DEFAULT : ' + configNilaiKKM + '));\nlet configTampilNilai = localStorage.getItem(\'configTampilNilai\') !== null ? localStorage.getItem(\'configTampilNilai\') !== \'false\' : (typeof TAMPIL_NILAI_DEFAULT !== \'undefined\' ? TAMPIL_NILAI_DEFAULT : ' + configTampilNilai + ');\nlet configCetakFont = localStorage.getItem(\'configCetakFont\') || (typeof CETAK_FONT_DEFAULT !== \'undefined\' ? CETAK_FONT_DEFAULT : ' + JSON.stringify(configCetakFont) + ');\nlet configCetakKertas = localStorage.getItem(\'configCetakKertas\') || (typeof CETAK_KERTAS_DEFAULT !== \'undefined\' ? CETAK_KERTAS_DEFAULT : ' + JSON.stringify(configCetakKertas) + ');\nlet configCetakUkuranFont = localStorage.getItem(\'configCetakUkuranFont\') || (typeof CETAK_UKURAN_FONT_DEFAULT !== \'undefined\' ? CETAK_UKURAN_FONT_DEFAULT : ' + JSON.stringify(configCetakUkuranFont) + ');\nlet configCetakSpasi = localStorage.getItem(\'configCetakSpasi\') || (typeof CETAK_SPASI_DEFAULT !== \'undefined\' ? CETAK_SPASI_DEFAULT : ' + JSON.stringify(configCetakSpasi) + ');\nlet configCetakMarginAtas = localStorage.getItem(\'configCetakMarginAtas\') || (typeof CETAK_MARGIN_ATAS_DEFAULT !== \'undefined\' ? CETAK_MARGIN_ATAS_DEFAULT : ' + JSON.stringify(configCetakMarginAtas) + ');\nlet configCetakMarginBawah = localStorage.getItem(\'configCetakMarginBawah\') || (typeof CETAK_MARGIN_BAWAH_DEFAULT !== \'undefined\' ? CETAK_MARGIN_BAWAH_DEFAULT : ' + JSON.stringify(configCetakMarginBawah) + ');\nlet configCetakMarginKiri = localStorage.getItem(\'configCetakMarginKiri\') || (typeof CETAK_MARGIN_KIRI_DEFAULT !== \'undefined\' ? CETAK_MARGIN_KIRI_DEFAULT : ' + JSON.stringify(configCetakMarginKiri) + ');\nlet configCetakMarginKanan = localStorage.getItem(\'configCetakMarginKanan\') || (typeof CETAK_MARGIN_KANAN_DEFAULT !== \'undefined\' ? CETAK_MARGIN_KANAN_DEFAULT : ' + JSON.stringify(configCetakMarginKanan) + ');\nlet configCetakKunci = localStorage.getItem(\'configCetakKunci\') || (typeof CETAK_KUNCI_DEFAULT !== \'undefined\' ? CETAK_KUNCI_DEFAULT : ' + JSON.stringify(configCetakKunci) + ');\nlet configCetakAcak = localStorage.getItem(\'configCetakAcak\') || (typeof CETAK_ACAK_DEFAULT !== \'undefined\' ? CETAK_ACAK_DEFAULT : ' + JSON.stringify(configCetakAcak) + ');\n// __RUNTIME_CONFIG_END__';
+    html = html.replace(/\/\/ __CONFIG_START__[\s\S]*?\/\/ __CONFIG_END__/, () => newConfigBlock);
+    html = html.replace(/\/\/ __RUNTIME_CONFIG_START__[\s\S]*?\/\/ __RUNTIME_CONFIG_END__/, () => newRuntimeConfigBlock);
+    html = html.replace(/const HTML_VERSION = "[^"]*";/, 'const HTML_VERSION = "' + newVersion + '";');
+    const blob = new Blob([html], {type: 'text/html;charset=utf-8'}), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'ujian-pkk-dkv-v' + newVersion + '.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    document.getElementById('statusSimpanPermanen').innerHTML = '<div class="alert-success">✅ <strong>File HTML berhasil didownload!</strong><br> Versi baru: <strong>v' + newVersion + '</strong><br>📌 Ganti file lama di hosting dengan file ini.</div>';
+  } catch (err) { document.getElementById('statusSimpanPermanen').innerHTML = '<div class="alert-error">❌ Error: ' + err.message + '</div>'; }
+}
+
+function enterFullscreen() { const elem = document.documentElement; if (elem.requestFullscreen) elem.requestFullscreen().catch(()=>{}); else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen(); }
+function exitFullscreen() { if (document.exitFullscreen) document.exitFullscreen().catch(()=>{}); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); }
+document.addEventListener('fullscreenchange', handleFullscreenChange); document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+function handleFullscreenChange() { const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement); if (!isFullscreen && isFullscreenActive && statusUjian === 'berlangsung') { catatPelanggaran('Keluar dari mode fullscreen'); tampilkanOverlayPelanggaran('Anda keluar dari mode fullscreen!'); setTimeout(() => { if (statusUjian === 'berlangsung') enterFullscreen(); }, 3500); } }
+document.addEventListener('copy', e => { if (statusUjian === 'berlangsung') { e.preventDefault(); catatPelanggaran('Percobaan copy teks'); } });
+document.addEventListener('cut', e => { if (statusUjian === 'berlangsung') { e.preventDefault(); catatPelanggaran('Percobaan cut teks'); } });
+document.addEventListener('paste', e => { if (statusUjian === 'berlangsung') { e.preventDefault(); } });
+document.addEventListener('keydown', e => {
+  if (statusUjian === 'berlangsung') {
+    if (e.ctrlKey && ['c','C','x','X','a','A','p','P','s','S','u','U'].includes(e.key)) { e.preventDefault(); catatPelanggaran('Ctrl+' + e.key.toUpperCase()); return false; }
+    if (e.key === 'F12') { e.preventDefault(); catatPelanggaran('Tombol F12 (DevTools)'); return false; }
+    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) { e.preventDefault(); catatPelanggaran('DevTools shortcut'); return false; }
+    if (e.key === 'PrintScreen' || e.key === 'Print') { e.preventDefault(); catatPelanggaran('Tombol PrintScreen'); tampilkanOverlayPelanggaran('Screenshot terdeteksi!'); navigator.clipboard.writeText('').catch(()=>{}); return false; }
+    if (e.metaKey && e.shiftKey && (e.key === 's' || e.key === 'S')) { e.preventDefault(); catatPelanggaran('Windows+Shift+S'); tampilkanOverlayPelanggaran('Snipping Tool terdeteksi!'); return false; }
+    if (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4' || e.key === '5')) { e.preventDefault(); catatPelanggaran('Screenshot Mac'); tampilkanOverlayPelanggaran('Screenshot terdeteksi!'); return false; }
+    if (e.shiftKey && e.key === 'F10') { e.preventDefault(); catatPelanggaran('Shift+F10 (Context Menu)'); return false; }
+    if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) { e.preventDefault(); catatPelanggaran('Console shortcut'); return false; }
+    if (e.key === 'F1') { e.preventDefault(); return false; }
+    if (e.key === 'F5' || (e.ctrlKey && (e.key === 'r' || e.key === 'R'))) { e.preventDefault(); catatPelanggaran('Mencoba refresh halaman'); return false; }
+    if (e.ctrlKey && ['n','N','t','T','w','W'].includes(e.key)) { e.preventDefault(); catatPelanggaran('Ctrl+' + e.key.toUpperCase()); return false; }
+    if (e.key === 'Meta' || e.key === 'OS' || e.key === 'Super' || e.key === 'Win' || e.key === 'ContextMenu') { e.preventDefault(); return false; }
+  }
+});
+window.addEventListener('blur', () => { if (statusUjian === 'berlangsung') { catatPelanggaran('Window kehilangan fokus'); tampilkanOverlayPelanggaran('Window kehilangan fokus!'); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden && statusUjian === 'berlangsung') { catatPelanggaran('Pindah tab / minimize'); tampilkanOverlayPelanggaran('Pindah tab terdeteksi!'); } });
+
+function catatPelanggaran(jenis) {
+  if (statusUjian !== 'berlangsung') return;
+  jumlahPelanggaran++; const waktu = new Date().toLocaleTimeString('id-ID');
+  pelanggaran.push({ no: jumlahPelanggaran, jenis: jenis, waktu: waktu });
+  localStorage.setItem('jumlahPelanggaran', jumlahPelanggaran); localStorage.setItem('pelanggaran', JSON.stringify(pelanggaran));
+  updateTampilanPelanggaran();
+  if (jumlahPelanggaran >= maxPelanggaranUjian) setTimeout(() => { alert('️ ' + maxPelanggaranUjian + ' pelanggaran tercapai! Ujian otomatis dikumpulkan.'); autoSubmit(); }, 2000);
+}
+
+function updateTampilanPelanggaran() { const display = document.getElementById('violationCountDisplay'); if (display) { display.innerText = jumlahPelanggaran + ' / ' + maxPelanggaranUjian; if (jumlahPelanggaran >= Math.ceil(maxPelanggaranUjian * 0.6)) display.style.background = '#991b1b'; } }
+function tampilkanOverlayPelanggaran(pesan) { const overlay = document.getElementById('violationOverlay'); document.getElementById('overlayCounter').innerText = jumlahPelanggaran; document.getElementById('overlayCount').innerText = jumlahPelanggaran; document.getElementById('overlayMax').innerText = maxPelanggaranUjian; document.getElementById('overlayInfoText').innerText = maxPelanggaranUjian + ' pelanggaran = ujian otomatis dikumpulkan'; document.getElementById('overlayMessage').innerText = pesan; overlay.style.display = 'flex'; setTimeout(() => { overlay.style.display = 'none'; }, 3000); }
+
+function buatWatermark(nama, nomor, kelas) {
+  const overlay = document.getElementById('watermarkOverlay'); overlay.innerHTML = '';
+  const text = nama + ' | ' + kelas + ' | ' + nomor, isDark = document.body.classList.contains('dark-mode'), color = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+  const rows = Math.ceil(window.innerHeight / 120) + 2, cols = Math.ceil(window.innerWidth / 350) + 2;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const span = document.createElement('span'); span.className = 'wm-text'; span.innerText = text; span.style.left = (c * 350 - 100) + 'px'; span.style.top = (r * 120 - 50) + 'px'; span.style.color = color; overlay.appendChild(span); }
+}
+
+function hapusWatermark() { const overlay = document.getElementById('watermarkOverlay'); if (overlay) overlay.innerHTML = ''; }
+function formatDurasi(detik) { if (detik < 60) return detik + ' dtk'; const m = Math.floor(detik / 60), s = detik % 60; return m + ' mnt ' + s + ' dtk'; }
+
+function hitungForensik() {
+  if (!waktuMulai || !soalUrutan || soalUrutan.length === 0) return null;
+  const timestamps = [];
+  Object.keys(waktuJawaban).forEach(soalIdx => { if (soalUrutan.includes(parseInt(soalIdx))) timestamps.push({ soalIdx: parseInt(soalIdx), waktu: waktuJawaban[soalIdx] }); });
+  if (timestamps.length === 0) return null;
+  timestamps.sort((a, b) => a.waktu - b.waktu);
+  const durasiPerSoal = []; let prevWaktu = waktuMulai;
+  timestamps.forEach((t, i) => { const durasi = Math.floor((t.waktu - prevWaktu) / 1000); durasiPerSoal.push({ soalIdx: t.soalIdx, displayIdx: soalUrutan.indexOf(t.soalIdx) + 1, durasi: durasi, timestamp: t.waktu }); prevWaktu = t.waktu; });
+  const totalWaktu = Math.floor((Date.now() - waktuMulai) / 1000), totalDijawab = durasiPerSoal.length, totalTidakDijawab = soalUrutan.length - totalDijawab;
+  const rataRata = totalDijawab > 0 ? Math.round(durasiPerSoal.reduce((sum, d) => sum + d.durasi, 0) / totalDijawab) : 0;
+  const tercepat = totalDijawab > 0 ? durasiPerSoal.reduce((min, d) => d.durasi < min.durasi ? d : min, durasiPerSoal[0]) : null;
+  const terlama = totalDijawab > 0 ? durasiPerSoal.reduce((max, d) => d.durasi > max.durasi ? d : max, durasiPerSoal[0]) : null;
+  const mencurigakan = durasiPerSoal.filter(d => d.durasi < 3);
+  return { totalWaktu, totalDijawab, totalTidakDijawab, rataRata, tercepat, terlama, durasiPerSoal, mencurigakan };
+}
+
+function renderForensik(forensik) {
+  if (!forensik) return '';
+  let html = '<div class="forensik-panel"><h3>🔍 Forensik Pengerjaan (Analisis Waktu)</h3><div class="forensik-grid">';
+  html += '<div class="forensik-item"><div class="label">Total Waktu</div><div class="value">' + formatDurasi(forensik.totalWaktu) + '</div></div>';
+  html += '<div class="forensik-item"><div class="label">Rata-rata/Soal</div><div class="value">' + formatDurasi(forensik.rataRata) + '</div></div>';
+  html += '<div class="forensik-item"><div class="label">Soal Dijawab</div><div class="value">' + forensik.totalDijawab + ' / ' + soalUrutan.length + '</div></div>';
+  html += '<div class="forensik-item ' + (forensik.totalTidakDijawab > 0 ? 'warning' : '') + '"><div class="label">Tidak Dijawab</div><div class="value">' + forensik.totalTidakDijawab + '</div></div>';
+  if (forensik.tercepat) html += '<div class="forensik-item ' + (forensik.tercepat.durasi < 3 ? 'danger' : '') + '"><div class="label">⚡ Tercepat (Soal ' + forensik.tercepat.displayIdx + ')</div><div class="value">' + formatDurasi(forensik.tercepat.durasi) + '</div></div>';
+  if (forensik.terlama) html += '<div class="forensik-item"><div class="label"> Terlama (Soal ' + forensik.terlama.displayIdx + ')</div><div class="value">' + formatDurasi(forensik.terlama.durasi) + '</div></div>';
+  html += '</div>';
+  if (forensik.mencurigakan.length > 0) html += '<div class="alert-error" style="margin-top:10px;">⚠️ <strong>TERDETEKSI ANOMALI:</strong> ' + forensik.mencurigakan.length + ' soal dijawab dalam waktu kurang dari 3 detik. Ini mengindikasikan kemungkinan menggunakan auto-clicker, menyalin jawaban, atau menebak asal.</div>';
+  html += '<table class="forensik-table"><thead><tr><th>No</th><th>Waktu Pengerjaan</th><th>Status</th></tr></thead><tbody>';
+  forensik.durasiPerSoal.forEach(d => { const isSuspicious = d.durasi < 3; html += '<tr class="' + (isSuspicious ? 'suspicious' : '') + '"><td><strong>Soal ' + d.displayIdx + '</strong></td><td>' + formatDurasi(d.durasi) + '</td><td>' + (isSuspicious ? '️ Mencurigakan' : '✅ Normal') + '</td></tr>'; });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function mulaiUjian() {
+  if (!soalAktif || soalAktif.length === 0) { alert('❌ Tidak ada soal yang tersedia untuk ujian!'); return; }
+  const nama = document.getElementById('nama').value.trim(), nomor = document.getElementById('nomor').value.trim(), kelas = document.getElementById('kelas').value.trim(), token = document.getElementById('tokenUjian').value.trim();
+  if (!nama || !nomor || !kelas) { alert('Mohon lengkapi semua data diri!'); return; }
+  if (token !== configToken) { alert('❌ Token Ujian salah!'); return; }
+  dataSiswa = {nama: nama, nomor: nomor, kelas: kelas};
+  localStorage.setItem('dataSiswa', JSON.stringify(dataSiswa)); waktuMulai = Date.now(); localStorage.setItem('waktuMulai', waktuMulai);
+  statusUjian = 'berlangsung'; localStorage.setItem('statusUjian', statusUjian);
+  jumlahPelanggaran = 0; pelanggaran = []; jawaban = {}; waktuJawaban = {}; urutanOpsiPerSoal = {};
+  maxPelanggaranUjian = configMaxPelanggaran;
+  localStorage.setItem('jumlahPelanggaran', 0); localStorage.setItem('pelanggaran', JSON.stringify(pelanggaran));
+  localStorage.setItem('jawaban', JSON.stringify(jawaban)); localStorage.setItem('waktuJawaban', JSON.stringify(waktuJawaban));
+  localStorage.setItem('urutanOpsiPerSoal', JSON.stringify(urutanOpsiPerSoal)); durasi = configDurasi * 60;
+  let pool = [...Array(soalAktif.length).keys()];
+  if (configAcak) pool = acakArray(pool);
+  if (configJumlahSoal > 0 && configJumlahSoal < pool.length) soalUrutan = pool.slice(0, configJumlahSoal); else soalUrutan = pool;
+  if (configAcakOpsi) soalUrutan.forEach(soalIdx => { const opsiIndices = [...Array(soalAktif[soalIdx].o.length).keys()]; urutanOpsiPerSoal[soalIdx] = acakArray(opsiIndices); });
+  else soalUrutan.forEach(soalIdx => { urutanOpsiPerSoal[soalIdx] = [...Array(soalAktif[soalIdx].o.length).keys()]; });
+  localStorage.setItem('soalUrutan', JSON.stringify(soalUrutan)); localStorage.setItem('urutanOpsiPerSoal', JSON.stringify(urutanOpsiPerSoal));
+  isFullscreenActive = true; enterFullscreen(); buatWatermark(nama, nomor, kelas); tampilkanSoal(); mulaiTimer();
+}
+
+function tampilkanSoal() {
+  document.getElementById('identityForm').style.display = 'none'; document.getElementById('quizArea').style.display = 'block';
+  document.getElementById('resultArea').style.display = 'none'; document.getElementById('menuAwal').style.display = 'none';
+  document.getElementById('timer').innerText = 'Waktu Tersisa: ' + String(configDurasi).padStart(2,'0') + ':00';
+  let html = '';
+  soalUrutan.forEach((soalIdx, displayIdx) => {
+    const s = soalAktif[soalIdx], opsiUrutan = urutanOpsiPerSoal[soalIdx] || [...Array(s.o.length).keys()];
+    html += '<div class="question"><p>' + (displayIdx+1) + '. ' + s.q + '</p>';
+    opsiUrutan.forEach((opsiAsliIdx, posisiBaru) => {
+      const teksOpsi = s.o[opsiAsliIdx], checked = jawaban[soalIdx] == opsiAsliIdx ? 'checked' : '', huruf = String.fromCharCode(65 + posisiBaru);
+      html += '<label class="option"><input type="radio" name="q' + soalIdx + '" value="' + opsiAsliIdx + '" ' + checked + ' onchange="simpanJawaban(' + soalIdx + ', ' + opsiAsliIdx + ')"> ' + huruf + '. ' + teksOpsi + '</label>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('soalContainer').innerHTML = html; updateTampilanPelanggaran(); updateProgressBar();
+}
+
+function simpanJawaban(idx, val) { jawaban[idx] = val; waktuJawaban[idx] = Date.now(); localStorage.setItem('jawaban', JSON.stringify(jawaban)); localStorage.setItem('waktuJawaban', JSON.stringify(waktuJawaban)); updateProgressBar(); }
+
+function updateProgressBar() {
+  const total = soalUrutan.length, answered = Object.keys(jawaban).filter(key => soalUrutan.includes(parseInt(key))).length;
+  const percent = total === 0 ? 0 : Math.round((answered / total) * 100);
+  document.getElementById('progressBar').style.width = percent + '%'; document.getElementById('progressText').innerText = answered + ' / ' + total;
+  if (percent === 100) document.getElementById('progressBar').style.backgroundColor = '#16a34a';
+}
+
+function mulaiTimer() {
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - waktuMulai) / 1000), sisa = durasi - elapsed;
+    if (sisa <= 0) { clearInterval(timerInterval); document.getElementById('timer').innerText = 'WAKTU HABIS!'; document.getElementById('timer').style.background = '#16a34a'; document.getElementById('btnKumpul').disabled = false; return; }
+    const menit = Math.floor(sisa / 60), detik = sisa % 60;
+    document.getElementById('timer').innerText = 'Waktu Tersisa: ' + String(menit).padStart(2,'0') + ':' + String(detik).padStart(2,'0');
+  }, 1000);
+}
+
+function kumpulkan() { const elapsed = Math.floor((Date.now() - waktuMulai) / 1000); if (elapsed < durasi) { alert('Anda belum dapat mengumpulkan sebelum waktu habis!\n\nSisa waktu: ' + Math.ceil((durasi - elapsed)/60) + ' menit lagi.'); return; } submitUjian(false); }
+function autoSubmit() { submitUjian(true); }
+
+function updateDashboardSyncBannerUI(state, extraInfo) {
+  const banner = document.getElementById('dashboardSyncBanner');
+  const textElem = document.getElementById('dashboardSyncStatusText');
+  if (!banner || !textElem) return;
+
+  banner.className = 'sync-banner';
+  const lastSync = localStorage.getItem('lastDashboardSyncTime');
+  const isPending = !!localStorage.getItem('pendingDashboardSync');
+  const hasSheetUrl = !!configGoogleSheetUrl;
+
+  if (state === 'syncing') {
+    banner.classList.add('sync-banner-info');
+    textElem.innerHTML = '<span class="sync-pulse sync-pulse-yellow"></span><span>⏳ Sedang menyinkronkan pengaturan ke Google Spreadsheet...</span>';
+    return;
+  }
+
+  if (state === 'success') {
+    banner.classList.add('sync-banner-success');
+    textElem.innerHTML = '<span class="sync-pulse sync-pulse-green"></span><span>✅ Pengaturan berhasil tersinkron ke Google Spreadsheet (' + (extraInfo || new Date().toLocaleTimeString('id-ID')) + ').</span>';
+    return;
+  }
+
+  if (!navigator.onLine) {
+    banner.classList.add('sync-banner-offline');
+    textElem.innerHTML = '<span class="sync-pulse sync-pulse-red"></span><span>📡 <strong>OFFLINE:</strong> Pengaturan tersimpan aman di perangkat ini. Menunggu terhubung ke Internet untuk sinkronisasi otomatis.</span>';
+    return;
+  }
+
+  if (isPending) {
+    banner.classList.add('sync-banner-warning');
+    textElem.innerHTML = '<span class="sync-pulse sync-pulse-yellow"></span><span>⚠️ Ada perubahan data tersimpan di perangkat yang belum tersinkron ke spreadsheet. Menghubungkan...</span>';
+    return;
+  }
+
+  if (!hasSheetUrl) {
+    banner.classList.add('sync-banner-info');
+    textElem.innerHTML = '<span class="sync-pulse sync-pulse-green"></span><span>💾 Tersimpan otomatis di perangkat ini. (Masukkan Google Sheet URL di Panel 9 untuk sinkronisasi cloud).</span>';
+    return;
+  }
+
+  banner.classList.add('sync-banner-success');
+  textElem.innerHTML = '<span class="sync-pulse sync-pulse-green"></span><span>🟢 Mode Online: Semua perubahan tersimpan & tersinkron' + (lastSync ? ' (Terakhir: ' + lastSync + ')' : '') + '.</span>';
+}
+
+async function syncDashboardGuru(payload) {
+  if (!configGoogleSheetUrl) {
+    updateDashboardSyncBannerUI();
+    return false;
+  }
+
+  if (!navigator.onLine) {
+    updateDashboardSyncBannerUI('offline');
+    return false;
+  }
+
+  if (isDashboardSyncing) return false;
+  isDashboardSyncing = true;
+  updateDashboardSyncBannerUI('syncing');
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+  try {
+    await fetch(configGoogleSheetUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    localStorage.removeItem('pendingDashboardSync');
+    const syncTimeStr = new Date().toLocaleTimeString('id-ID');
+    localStorage.setItem('lastDashboardSyncTime', syncTimeStr);
+    updateDashboardSyncBannerUI('success', syncTimeStr);
+    isDashboardSyncing = false;
+    return true;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.warn('Gagal sinkronisasi dashboard guru:', err);
+    updateDashboardSyncBannerUI(navigator.onLine ? 'pending' : 'offline');
+    isDashboardSyncing = false;
+    return false;
+  }
+}
+
+async function prosesAntreanDashboardSync() {
+  const pending = localStorage.getItem('pendingDashboardSync');
+  if (!pending) {
+    updateDashboardSyncBannerUI();
+    return;
+  }
+  if (!navigator.onLine) {
+    updateDashboardSyncBannerUI('offline');
+    return;
+  }
+  if (!configGoogleSheetUrl || isDashboardSyncing) return;
+
+  try {
+    const payload = JSON.parse(pending);
+    await syncDashboardGuru(payload);
+  } catch (err) {
+    console.error('Error memproses antrean dashboard sync:', err);
+  }
+}
+
+function syncDashboardGuruManual() {
+  simpanDataDashboardOtomatis(false);
+  const payload = kumpulkanSemuaDataDashboard();
+  localStorage.setItem('pendingDashboardSync', JSON.stringify(payload));
+  if (!navigator.onLine) {
+    alert('📡 Perangkat sedang OFFLINE. Data pengaturan telah tersimpan di browser Anda dan otomatis dikirim saat terhubung ke Internet.');
+    updateDashboardSyncBannerUI('offline');
+    return;
+  }
+  if (!configGoogleSheetUrl) {
+    alert('ℹ️ Masukkan URL Google Apps Script Web App terlebih dahulu di Panel 9 untuk sinkronisasi otomatis ke Google Spreadsheet.');
+    updateDashboardSyncBannerUI();
+    return;
+  }
+  syncDashboardGuru(payload).then(success => {
+    if (success) {
+      alert('✅ Sinkronisasi berhasil! Pengaturan Dashboard Guru telah diperbarui di Google Spreadsheet.');
+    } else {
+      alert('📡 Pengiriman tertunda karena masalah koneksi. Data tetap tersimpan aman dan otomatis dicoba kembali.');
+    }
+  });
+}
+
+async function prosesAntreanSheet() {
+  const pendingDataStr = localStorage.getItem('pendingSheetPayload');
+  const sheetSent = localStorage.getItem('sheetSent') === 'true';
+
+  if (sheetSent) {
+    localStorage.removeItem('pendingSheetPayload');
+    const sheetStatusElem = document.getElementById('sheetSendingStatus');
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-success">✅ Hasil nilai telah terkirim ke Google Spreadsheet (Anti-Duplikasi Aktif).</div>';
+    }
+    updateGlobalNetworkStatusUI();
+    return;
+  }
+
+  if (!pendingDataStr || !configGoogleSheetUrl) {
+    updateGlobalNetworkStatusUI();
+    return;
+  }
+
+  if (isSheetSyncing) return;
+  isSheetSyncing = true;
+
+  const sheetStatusElem = document.getElementById('sheetSendingStatus');
+  if (sheetStatusElem) sheetStatusElem.innerHTML = '<div class="alert-info">⏳ Menghubungkan & mengirim nilai tersimpan ke Google Spreadsheet...</div>';
+
+  try {
+    const payload = JSON.parse(pendingDataStr);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+    await fetch(configGoogleSheetUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    localStorage.removeItem('pendingSheetPayload');
+    localStorage.setItem('sheetSent', 'true');
+    isSheetSyncing = false;
+
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-success">✅ Hasil nilai berhasil terkirim ke Google Spreadsheet!</div>';
+    }
+    updateGlobalNetworkStatusUI();
+  } catch (err) {
+    isSheetSyncing = false;
+    console.warn('Gagal memproses antrean pengiriman sheet:', err);
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-info">📡 Pengiriman tertunda (menunggu internet aktif). Nilai tersimpan aman di perangkat &amp; otomatis dikirim sekali saat online. <button onclick="prosesAntreanSheet()" class="btn btn-warning" style="padding:2px 8px; font-size:11px; margin-left:5px;">🔄 Coba Sekarang</button></div>';
+    }
+    updateGlobalNetworkStatusUI();
+  }
+}
+
+async function kirimKeGoogleSheet(payload, customUrl) {
+  const targetUrl = customUrl || configGoogleSheetUrl;
+  if (!targetUrl) return false;
+  const sheetStatusElem = document.getElementById('sheetSendingStatus');
+
+  // Jika ini adalah test kirim dari dashboard
+  if (customUrl) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    try {
+      await fetch(targetUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return true;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      return false;
+    }
+  }
+
+  // Jika sudah pernah terkirim sebelumnya, jangan kirim ulang (anti double submit)
+  if (localStorage.getItem('sheetSent') === 'true') {
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-success">✅ Hasil nilai telah terkirim ke Google Spreadsheet (tidak ada data dobel).</div>';
+    }
+    return true;
+  }
+
+  // Pastikan payload memiliki submissionId unik permanen
+  let submissionId = localStorage.getItem('submissionId');
+  if (!submissionId) {
+    submissionId = buatSubmissionId();
+    localStorage.setItem('submissionId', submissionId);
+  }
+  payload.submissionId = submissionId;
+
+  const jsonString = JSON.stringify(payload);
+  localStorage.setItem('pendingSheetPayload', jsonString);
+  updateGlobalNetworkStatusUI();
+
+  if (!navigator.onLine) {
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-info">📡 <strong>Perangkat Sedang Offline:</strong> Nilai tersimpan aman di perangkat ini. Sistem akan otomatis mengirimkannya ke Google Spreadsheet sekali saat terhubung ke Internet.</div>';
+    }
+    return false;
+  }
+
+  if (isSheetSyncing) return false;
+  isSheetSyncing = true;
+
+  if (sheetStatusElem) {
+    sheetStatusElem.innerHTML = '<div class="alert-info">⏳ Mengirim hasil nilai ke Google Spreadsheet...</div>';
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+  try {
+    await fetch(targetUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: jsonString,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    localStorage.removeItem('pendingSheetPayload');
+    localStorage.setItem('sheetSent', 'true');
+    isSheetSyncing = false;
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-success">✅ Hasil nilai berhasil terkirim ke Google Spreadsheet (1x terkirim, tidak ada duplikasi).</div>';
+    }
+    updateGlobalNetworkStatusUI();
+    return true;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    isSheetSyncing = false;
+    console.error('Gagal mengirim ke Google Sheet:', err);
+    if (sheetStatusElem) {
+      sheetStatusElem.innerHTML = '<div class="alert-info">📡 Pengiriman tertunda (koneksi terputus). Nilai tersimpan aman &amp; otomatis terkirim begitu terkoneksi Internet. <button onclick="prosesAntreanSheet()" class="btn btn-warning" style="padding:2px 8px; font-size:11px; margin-left:5px;">🔄 Coba Lagi</button></div>';
+    }
+    updateGlobalNetworkStatusUI();
+    return false;
+  }
+}
+
+function submitUjian(isAutoSubmit) {
+  clearInterval(timerInterval); let benar = 0;
+  soalUrutan.forEach(soalIdx => { if (jawaban[soalIdx] == soalAktif[soalIdx].a) benar++; });
+  const totalSoalCount = soalUrutan.length || 1;
+  const nilai = Math.round((benar / totalSoalCount) * configNilaiMaksimal);
+  const waktuSelesaiStr = new Date().toLocaleString('id-ID');
+  statusUjian = 'selesai'; localStorage.setItem('statusUjian', statusUjian); localStorage.setItem('nilai', nilai); localStorage.setItem('benar', benar);
+  localStorage.setItem('autoSubmit', isAutoSubmit); localStorage.setItem('waktuSelesai', waktuSelesaiStr);
+
+  // Buat dan simpan submissionId unik untuk sesi ujian ini
+  let currentSubId = localStorage.getItem('submissionId');
+  if (!currentSubId) {
+    currentSubId = buatSubmissionId();
+    localStorage.setItem('submissionId', currentSubId);
+  }
+
+  isFullscreenActive = false; exitFullscreen(); hapusWatermark();
+  tampilkanHasil(nilai, benar, isAutoSubmit);
+
+  if (configGoogleSheetUrl && dataSiswa) {
+    const isLulus = nilai >= configNilaiKKM;
+    const payload = {
+      submissionId: currentSubId,
+      nama: dataSiswa.nama,
+      nomor: dataSiswa.nomor,
+      kelas: dataSiswa.kelas,
+      nilai: nilai,
+      nilaiMaksimal: configNilaiMaksimal,
+      kkm: configNilaiKKM,
+      statusKelulusan: isLulus ? "TUNTAS" : "BELUM TUNTAS",
+      benar: benar,
+      totalSoal: soalUrutan.length,
+      pelanggaran: jumlahPelanggaran,
+      autoSubmit: isAutoSubmit,
+      waktuSelesai: waktuSelesaiStr
+    };
+    kirimKeGoogleSheet(payload);
+  }
+}
+
+function tampilkanHasil(nilai, benar, isAutoSubmit) {
+  document.getElementById('identityForm').style.display = 'none'; document.getElementById('quizArea').style.display = 'none'; document.getElementById('resultArea').style.display = 'block';
+  const isViolation = jumlahPelanggaran > 0 || isAutoSubmit, resultClass = isViolation ? 'result violation-result' : 'result';
+  const titleText = isAutoSubmit ? ' UJIAN DIKUMPULKAN PAKSA' : '✅ Ujian Selesai';
+  let violationListHtml = '';
+  if (pelanggaran.length > 0) violationListHtml = '<div class="violation-list"><h3>📋 Riwayat Pelanggaran:</h3><ul>' + pelanggaran.map(p => '<li><strong>Ke-' + p.no + '</strong> (' + p.waktu + '): ' + p.jenis + '</li>').join('') + '</ul></div>';
+  const forensik = hitungForensik(), forensikHtml = renderForensik(forensik), waktuSelesai = localStorage.getItem('waktuSelesai') || '-';
+
+  const isLulus = nilai >= configNilaiKKM;
+  const badgeKkmClass = isLulus ? 'status-on' : 'status-off';
+  const badgeKkmText = isLulus ? 'TUNTAS (≥ ' + configNilaiKKM + ')' : 'BELUM TUNTAS (< ' + configNilaiKKM + ')';
+
+  let scoreDisplayHtml = '';
+  if (configTampilNilai) {
+    scoreDisplayHtml = '<div class="score">' + nilai + ' <span style="font-size:16px; font-weight:normal; color:var(--text-secondary);">/ ' + configNilaiMaksimal + '</span></div>' +
+                       '<div style="margin-bottom:12px;"><span class="status-badge ' + badgeKkmClass + '" style="font-size:14px; padding:5px 12px;">Status: ' + badgeKkmText + '</span></div>';
+  } else {
+    scoreDisplayHtml = '<div class="alert-info" style="margin:20px 0; font-size:15px; font-weight:bold;">🔒 Nilai disembunyikan oleh Guru. Hasil ujian Anda telah tersimpan.</div>';
+  }
+
+  const resetSiswaBtnHtml = '<button class="menu-btn menu-btn-warning" id="btnResetResult" onclick="resetSoalMenuAwal()" style="display:' + (configEnableReset ? 'inline-flex' : 'none') + '; margin:12px auto 15px auto;">🔄 Reset Ujian / Latihan</button>';
+
+  document.getElementById('resultArea').innerHTML = '<div class="' + resultClass + '"><h2>' + titleText + '</h2>' + resetSiswaBtnHtml + '<p><strong>Nama:</strong> ' + dataSiswa.nama + '</p><p><strong>Nomor:</strong> ' + dataSiswa.nomor + '</p><p><strong>Kelas:</strong> ' + dataSiswa.kelas + '</p><p style="font-size:12px; color:var(--text-secondary);">Selesai: ' + waktuSelesai + '</p>' + scoreDisplayHtml + '<p>Benar: <strong>' + benar + '</strong> / ' + soalUrutan.length + '</p><p style="margin-top:12px; font-size:16px;"><strong>⚠️ Pelanggaran: <span style="color:#dc2626; font-size:20px;">' + jumlahPelanggaran + '</span> / ' + maxPelanggaranUjian + '</strong></p>' + (isAutoSubmit ? '<p style="color:#991b1b; font-weight:bold; margin-top:8px;">Dikumpulkan otomatis (' + maxPelanggaranUjian + ' pelanggaran)</p>' : '') + '<div id="sheetSendingStatus"></div>' + violationListHtml + forensikHtml + '<div class="locked-box"> <strong>Ujian dikunci.</strong> Hubungi guru untuk reset.</div><button class="btn-reset" style="float:none; margin-top:15px; padding:10px 20px; font-size:14px;" onclick="bukaModalReset()">🔐 Reset (Guru)</button></div>';
+}
+
+function tutupModal(id) { document.getElementById(id).style.display = 'none'; }
+function bukaModalReset() { document.getElementById('resetModal').style.display = 'flex'; document.getElementById('passwordGuru').value = ''; }
+function konfirmasiReset() {
+  const pwd = document.getElementById('passwordGuru').value;
+  if (pwd === PASSWORD_GURU) { if (confirm('Yakin ingin mereset ujian siswa ini?')) { ['statusUjian','waktuMulai','jawaban','dataSiswa','pelanggaran','jumlahPelanggaran','nilai','benar','autoSubmit','waktuSelesai','soalUrutan','urutanOpsiPerSoal','waktuJawaban','pendingSheetPayload','submissionId','sheetSent'].forEach(k => localStorage.removeItem(k)); isFullscreenActive = false; exitFullscreen(); hapusWatermark(); alert('Ujian berhasil direset!'); location.reload(); } } else { alert('Password salah!'); }
+}
+
+window.addEventListener('online', () => {
+  console.log('Koneksi terdeteksi (online). Memproses antrean...');
+  updateGlobalNetworkStatusUI();
+  prosesAntreanSheet();
+  prosesAntreanDashboardSync();
+});
+
+window.addEventListener('offline', () => {
+  console.log('Koneksi terputus (offline).');
+  updateGlobalNetworkStatusUI();
+});
+
+setInterval(() => {
+  if (navigator.onLine) {
+    if (localStorage.getItem('pendingSheetPayload')) {
+      prosesAntreanSheet();
+    }
+    if (localStorage.getItem('pendingDashboardSync')) {
+      prosesAntreanDashboardSync();
+    }
+  }
+}, 10000);
+
+window.onload = function() {
+  if (localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); document.querySelector('.dark-mode-toggle').innerText = '☀️'; }
+  updateJudulDiSemuaTempat();
+  updateResetButtonVisibility();
+  updateGlobalNetworkStatusUI();
+  if (statusUjian === 'berlangsung') {
+    waktuMulai = parseInt(localStorage.getItem('waktuMulai')); jumlahPelanggaran = parseInt(localStorage.getItem('jumlahPelanggaran') || '0');
+    pelanggaran = JSON.parse(localStorage.getItem('pelanggaran') || '[]'); jawaban = JSON.parse(localStorage.getItem('jawaban') || '{}');
+    waktuJawaban = JSON.parse(localStorage.getItem('waktuJawaban') || '{}'); urutanOpsiPerSoal = JSON.parse(localStorage.getItem('urutanOpsiPerSoal') || '{}');
+    soalUrutan = JSON.parse(localStorage.getItem('soalUrutan') || 'null') || [...Array(soalAktif.length).keys()];
+    durasi = configDurasi * 60; maxPelanggaranUjian = configMaxPelanggaran; isFullscreenActive = true;
+    document.getElementById('menuAwal').style.display = 'none';
+    soalUrutan.forEach(soalIdx => {
+      if (!urutanOpsiPerSoal[soalIdx]) {
+        const indices = [...Array(soalAktif[soalIdx].o.length).keys()];
+        urutanOpsiPerSoal[soalIdx] = configAcakOpsi ? acakArray(indices) : indices;
+      }
+    });
+    if (dataSiswa) buatWatermark(dataSiswa.nama, dataSiswa.nomor, dataSiswa.kelas);
+    tampilkanSoal(); mulaiTimer(); enterFullscreen();
+    const elapsed = Math.floor((Date.now() - waktuMulai) / 1000);
+    if (elapsed >= durasi) { document.getElementById('timer').innerText = 'WAKTU HABIS!'; document.getElementById('timer').style.background = '#16a34a'; document.getElementById('btnKumpul').disabled = false; }
+  } else if (statusUjian === 'selesai') {
+    const nilai = localStorage.getItem('nilai'), benar = parseInt(localStorage.getItem('benar') || 0), isAutoSubmit = localStorage.getItem('autoSubmit') === 'true';
+    jumlahPelanggaran = parseInt(localStorage.getItem('jumlahPelanggaran') || '0'); pelanggaran = JSON.parse(localStorage.getItem('pelanggaran') || '[]');
+    waktuJawaban = JSON.parse(localStorage.getItem('waktuJawaban') || '{}'); soalUrutan = JSON.parse(localStorage.getItem('soalUrutan') || 'null') || [];
+    waktuMulai = parseInt(localStorage.getItem('waktuMulai') || Date.now()); maxPelanggaranUjian = configMaxPelanggaran;
+    if (!dataSiswa) { document.getElementById('menuAwal').style.display = 'none'; document.getElementById('resultArea').innerHTML = '<div class="result violation-result"><h2>️ Data Tidak Ditemukan</h2><p>Hubungi guru untuk reset.</p><button class="btn-reset" style="float:none; margin-top:15px;" onclick="bukaModalReset()"> Reset (Guru)</button></div>'; document.getElementById('resultArea').style.display = 'block'; return; }
+    document.getElementById('menuAwal').style.display = 'none'; tampilkanHasil(parseInt(nilai), benar, isAutoSubmit);
+    if (localStorage.getItem('pendingSheetPayload')) {
+      prosesAntreanSheet();
+    }
+  }
+};
+
+window.addEventListener('resize', () => { if (statusUjian === 'berlangsung' && dataSiswa) buatWatermark(dataSiswa.nama, dataSiswa.nomor, dataSiswa.kelas); });
+</script>
+
+  
+
+
+</body></html>

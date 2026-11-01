@@ -553,10 +553,23 @@
         <label>URL Google Apps Script Web App:</label>
         <input type="text" id="inputGoogleSheet" class="input-judul" placeholder="https://script.google.com/macros/s/.../exec">
       </div>
+      <div class="form-group">
+        <label>Nama Akun Google:</label>
+        <input type="text" id="inputAkunGoogle" class="input-judul" placeholder="Contoh: guru123@gmail.com">
+      </div>
+      <div class="form-group">
+        <label>Nama Folder Google Drive:</label>
+        <input type="text" id="inputNamaFolder" class="input-judul" placeholder="Contoh: Hasil Ujian PKK DKV">
+      </div>
+      <div class="form-group">
+        <label>Link Folder Google Drive:</label>
+        <input type="text" id="inputLinkFolder" class="input-judul" placeholder="https://drive.google.com/drive/folders/..." oninput="updateLinkFolderButton()">
+      </div>
       <div class="panel-row">
-        <button class="btn btn-success" onclick="simpanGoogleSheet()" style="padding:8px 15px; font-size:13px;">💾 Simpan URL</button>
+        <button class="btn btn-success" onclick="simpanGoogleSheet()" style="padding:8px 15px; font-size:13px;">💾 Simpan Pengaturan</button>
         <button class="btn btn-warning" onclick="tesKirimGoogleSheet()" style="padding:8px 15px; font-size:13px;">🧪 Tes Kirim Data</button>
         <button class="btn btn-secondary" onclick="resetGoogleSheet()" style="padding:8px 15px; font-size:13px;">🔄 Kosongkan</button>
+        <a id="btnBukaFolder" href="#" target="_blank" class="btn btn-primary" style="padding:8px 15px; font-size:13px; display:none; background:var(--accent-blue); text-decoration:none; color:white;">📂 Buka Folder Drive</a>
       </div>
       <div id="statusGoogleSheet"></div>
       <div class="alert-info" style="margin-top:10px;">
@@ -750,6 +763,9 @@ const SUBJUDUL_DEFAULT = "MATERI BAB";
 const PASSWORD_DEFAULT = "guru123";
 const TOKEN_DEFAULT = "2027";
 const GOOGLE_SHEET_URL_DEFAULT = "https://script.google.com/macros/s/AKfycby1GeENSeS8rGqVaN6CWwkkKK1xhNQxS4x-fTZ3hxc8bM2GDMkT5I7udv_Hz2Vnd3ag/exec";
+const AKUN_GOOGLE_DEFAULT = "";
+const NAMA_FOLDER_DEFAULT = "";
+const LINK_FOLDER_DEFAULT = "";
 const DURASI_DEFAULT = 35;
 const JUMLAH_SOAL_DEFAULT = 0;
 const ACAK_DEFAULT = true;
@@ -805,7 +821,7 @@ const UKURAN_KERTAS = {
 
 const savedVersion = localStorage.getItem('htmlVersion');
 if (savedVersion !== HTML_VERSION) {
-  ['configJudul','configSubJudul','configPassword','configToken','configGoogleSheetUrl','configDurasi','configJumlahSoal','configAcak','configAcakOpsi','configEnableReset','configMaxPelanggaran','configNilaiMaksimal','configNilaiKKM','configTampilNilai','configCetakFont','configCetakKertas','configCetakUkuranFont','configCetakSpasi','configCetakMarginAtas','configCetakMarginBawah','configCetakMarginKiri','configCetakMarginKanan','configCetakKunci','configCetakAcak','soalAktif'].forEach(k => localStorage.removeItem(k));
+  ['configJudul','configSubJudul','configPassword','configToken','configGoogleSheetUrl','configAkunGoogle','configNamaFolder','configLinkFolder','configDurasi','configJumlahSoal','configAcak','configAcakOpsi','configEnableReset','configMaxPelanggaran','configNilaiMaksimal','configNilaiKKM','configTampilNilai','configCetakFont','configCetakKertas','configCetakUkuranFont','configCetakSpasi','configCetakMarginAtas','configCetakMarginBawah','configCetakMarginKiri','configCetakMarginKanan','configCetakKunci','configCetakAcak','soalAktif'].forEach(k => localStorage.removeItem(k));
   localStorage.setItem('htmlVersion', HTML_VERSION);
 }
 
@@ -813,6 +829,9 @@ let configJudul = localStorage.getItem('configJudul') || JUDUL_DEFAULT;
 let configSubJudul = localStorage.getItem('configSubJudul') || SUBJUDUL_DEFAULT;
 let configToken = localStorage.getItem('configToken') || TOKEN_DEFAULT;
 let configGoogleSheetUrl = localStorage.getItem('configGoogleSheetUrl') || GOOGLE_SHEET_URL_DEFAULT;
+let configAkunGoogle = localStorage.getItem('configAkunGoogle') || AKUN_GOOGLE_DEFAULT;
+let configNamaFolder = localStorage.getItem('configNamaFolder') || NAMA_FOLDER_DEFAULT;
+let configLinkFolder = localStorage.getItem('configLinkFolder') || LINK_FOLDER_DEFAULT;
 let PASSWORD_GURU = localStorage.getItem('configPassword') || PASSWORD_DEFAULT;
 let soalAktif = JSON.parse(localStorage.getItem('soalAktif') || 'null') || SOAL_DEFAULT;
 
@@ -892,6 +911,10 @@ function loadDashboardData() {
   document.getElementById('inputSubJudul').value = configSubJudul;
   document.getElementById('inputToken').value = configToken;
   document.getElementById('inputGoogleSheet').value = configGoogleSheetUrl;
+  document.getElementById('inputAkunGoogle').value = configAkunGoogle;
+  document.getElementById('inputNamaFolder').value = configNamaFolder;
+  document.getElementById('inputLinkFolder').value = configLinkFolder;
+  updateLinkFolderButton();
   document.getElementById('previewJudulUtama').innerText = configJudul;
   document.getElementById('previewSubJudul').innerText = configSubJudul;
   document.getElementById('previewToken').innerText = configToken;
@@ -1051,6 +1074,25 @@ function simpanDataDashboardOtomatis(triggerSync = true) {
       localStorage.setItem('configGoogleSheetUrl', configGoogleSheetUrl);
     }
 
+    const inputAkun = document.getElementById('inputAkunGoogle');
+    if (inputAkun) {
+      configAkunGoogle = inputAkun.value.trim();
+      localStorage.setItem('configAkunGoogle', configAkunGoogle);
+    }
+
+    const inputNamaFolder = document.getElementById('inputNamaFolder');
+    if (inputNamaFolder) {
+      configNamaFolder = inputNamaFolder.value.trim();
+      localStorage.setItem('configNamaFolder', configNamaFolder);
+    }
+
+    const inputLinkFolder = document.getElementById('inputLinkFolder');
+    if (inputLinkFolder) {
+      configLinkFolder = inputLinkFolder.value.trim();
+      localStorage.setItem('configLinkFolder', configLinkFolder);
+      updateLinkFolderButton();
+    }
+
     localStorage.setItem('soalAktif', JSON.stringify(soalAktif));
 
     if (triggerSync) {
@@ -1076,7 +1118,8 @@ function initDashboardAutoSave() {
   const inputIds = [
     'inputJudul', 'inputSubJudul', 'inputToken', 'inputWaktu',
     'inputJumlahSoal', 'inputNilaiMaksimal', 'inputNilaiKKM',
-    'inputMaxPelanggaran', 'inputGoogleSheet', 'cetakMarginAtas',
+    'inputMaxPelanggaran', 'inputGoogleSheet', 'inputAkunGoogle',
+    'inputNamaFolder', 'inputLinkFolder', 'cetakMarginAtas',
     'cetakMarginBawah', 'cetakMarginKiri', 'cetakMarginKanan'
   ];
   inputIds.forEach(id => {
@@ -1162,17 +1205,45 @@ function salinKodeGas() {
 
 function simpanGoogleSheet() {
   const url = document.getElementById('inputGoogleSheet').value.trim();
+  const akun = document.getElementById('inputAkunGoogle').value.trim();
+  const namaFolder = document.getElementById('inputNamaFolder').value.trim();
+  const linkFolder = document.getElementById('inputLinkFolder').value.trim();
+
   configGoogleSheetUrl = url;
+  configAkunGoogle = akun;
+  configNamaFolder = namaFolder;
+  configLinkFolder = linkFolder;
+
   localStorage.setItem('configGoogleSheetUrl', configGoogleSheetUrl);
-  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-success">✅ URL Google Apps Script berhasil disimpan di perangkat ini!<br>📌 <strong>PENTING:</strong> Klik tombol <strong>"💾 Download HTML Terbaru"</strong> di bawah lalu ganti file di GitHub Pages/hosting Anda agar URL otomatis terpasang di seluruh HP/perangkat siswa tanpa perlu copy-paste lagi.</div>';
+  localStorage.setItem('configAkunGoogle', configAkunGoogle);
+  localStorage.setItem('configNamaFolder', configNamaFolder);
+  localStorage.setItem('configLinkFolder', configLinkFolder);
+
+  updateLinkFolderButton();
+
+  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-success">✅ Pengaturan Integrasi Google berhasil disimpan di perangkat ini!<br>📌 <strong>PENTING:</strong> Klik tombol <strong>"💾 Download HTML Terbaru"</strong> di bawah lalu ganti file di GitHub Pages/hosting Anda agar pengaturan otomatis terpasang di seluruh HP/perangkat siswa tanpa perlu copy-paste lagi.</div>';
 }
 
 function resetGoogleSheet() {
-  if (!confirm('Kosongkan URL Google Apps Script?')) return;
+  if (!confirm('Kosongkan pengaturan Integrasi Google?')) return;
   configGoogleSheetUrl = '';
+  configAkunGoogle = '';
+  configNamaFolder = '';
+  configLinkFolder = '';
+
   localStorage.setItem('configGoogleSheetUrl', '');
+  localStorage.setItem('configAkunGoogle', '');
+  localStorage.setItem('configNamaFolder', '');
+  localStorage.setItem('configLinkFolder', '');
+
   document.getElementById('inputGoogleSheet').value = '';
-  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-info">ℹ️ URL Google Apps Script dikosongkan.</div>';
+  document.getElementById('inputAkunGoogle').value = '';
+  document.getElementById('inputNamaFolder').value = '';
+  document.getElementById('inputLinkFolder').value = '';
+
+  updateLinkFolderButton();
+
+  document.getElementById('statusGoogleSheet').innerHTML = '<div class="alert-info">ℹ️ Pengaturan Integrasi Google dikosongkan.</div>';
   simpanDataDashboardOtomatis(true);
 }
 
@@ -1234,6 +1305,20 @@ function checkPasswordStrength() {
   if (score <= 1) div.innerHTML = '<span style="color:#dc2626;">🔴 Lemah</span>';
   else if (score <= 3) div.innerHTML = '<span style="color:#f59e0b;">🟡 Sedang</span>';
   else div.innerHTML = '<span style="color:#16a34a;"> Kuat</span>';
+}
+
+function updateLinkFolderButton() {
+  const btn = document.getElementById('btnBukaFolder');
+  const linkInput = document.getElementById('inputLinkFolder');
+  if (btn && linkInput) {
+    const link = linkInput.value.trim();
+    if (link) {
+      btn.href = link;
+      btn.style.display = 'inline-block';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
 }
 
 function ubahPassword() {
@@ -1675,8 +1760,17 @@ function simpanSemuaPengaturan() {
     }
 
     const sheetUrl = document.getElementById('inputGoogleSheet').value.trim();
+    const akun = document.getElementById('inputAkunGoogle').value.trim();
+    const namaFolder = document.getElementById('inputNamaFolder').value.trim();
+    const linkFolder = document.getElementById('inputLinkFolder').value.trim();
     configGoogleSheetUrl = sheetUrl;
+    configAkunGoogle = akun;
+    configNamaFolder = namaFolder;
+    configLinkFolder = linkFolder;
     localStorage.setItem('configGoogleSheetUrl', configGoogleSheetUrl);
+    localStorage.setItem('configAkunGoogle', configAkunGoogle);
+    localStorage.setItem('configNamaFolder', configNamaFolder);
+    localStorage.setItem('configLinkFolder', configLinkFolder);
 
     localStorage.setItem('soalAktif', JSON.stringify(soalAktif));
 
@@ -1737,6 +1831,9 @@ function simpanPermanenKeHTML() {
     syncSelect('selectTampilNilai', configTampilNilai ? "true" : "false");
     syncInputValue('inputMaxPelanggaran', configMaxPelanggaran);
     syncInputValue('inputGoogleSheet', configGoogleSheetUrl);
+    syncInputValue('inputAkunGoogle', configAkunGoogle);
+    syncInputValue('inputNamaFolder', configNamaFolder);
+    syncInputValue('inputLinkFolder', configLinkFolder);
     syncSelect('cetakFont', configCetakFont);
     syncSelect('cetakKertas', configCetakKertas);
     syncSelect('cetakUkuranFont', configCetakUkuranFont);
@@ -1748,7 +1845,7 @@ function simpanPermanenKeHTML() {
     syncSelect('cetakKunci', configCetakKunci);
     syncSelect('cetakAcak', configCetakAcak);
 
-    const newConfigBlock = '// __CONFIG_START__\nconst JUDUL_DEFAULT = ' + JSON.stringify(configJudul) + ';\nconst SUBJUDUL_DEFAULT = ' + JSON.stringify(configSubJudul) + ';\nconst PASSWORD_DEFAULT = ' + JSON.stringify(PASSWORD_GURU) + ';\nconst TOKEN_DEFAULT = ' + JSON.stringify(configToken) + ';\nconst GOOGLE_SHEET_URL_DEFAULT = ' + JSON.stringify(configGoogleSheetUrl) + ';\nconst DURASI_DEFAULT = ' + JSON.stringify(configDurasi) + ';\nconst JUMLAH_SOAL_DEFAULT = ' + JSON.stringify(configJumlahSoal) + ';\nconst ACAK_DEFAULT = ' + JSON.stringify(configAcak) + ';\nconst ACAK_OPSI_DEFAULT = ' + JSON.stringify(configAcakOpsi) + ';\nconst ENABLE_RESET_DEFAULT = ' + JSON.stringify(configEnableReset) + ';\nconst MAX_PELANGGARAN_DEFAULT = ' + JSON.stringify(configMaxPelanggaran) + ';\nconst NILAI_MAKSIMAL_DEFAULT = ' + JSON.stringify(configNilaiMaksimal) + ';\nconst NILAI_KKM_DEFAULT = ' + JSON.stringify(configNilaiKKM) + ';\nconst TAMPIL_NILAI_DEFAULT = ' + JSON.stringify(configTampilNilai) + ';\nconst CETAK_FONT_DEFAULT = ' + JSON.stringify(configCetakFont) + ';\nconst CETAK_KERTAS_DEFAULT = ' + JSON.stringify(configCetakKertas) + ';\nconst CETAK_UKURAN_FONT_DEFAULT = ' + JSON.stringify(configCetakUkuranFont) + ';\nconst CETAK_SPASI_DEFAULT = ' + JSON.stringify(configCetakSpasi) + ';\nconst CETAK_MARGIN_ATAS_DEFAULT = ' + JSON.stringify(configCetakMarginAtas) + ';\nconst CETAK_MARGIN_BAWAH_DEFAULT = ' + JSON.stringify(configCetakMarginBawah) + ';\nconst CETAK_MARGIN_KIRI_DEFAULT = ' + JSON.stringify(configCetakMarginKiri) + ';\nconst CETAK_MARGIN_KANAN_DEFAULT = ' + JSON.stringify(configCetakMarginKanan) + ';\nconst CETAK_KUNCI_DEFAULT = ' + JSON.stringify(configCetakKunci) + ';\nconst CETAK_ACAK_DEFAULT = ' + JSON.stringify(configCetakAcak) + ';\nconst SOAL_DEFAULT = ' + JSON.stringify(soalAktif) + ';\n// __CONFIG_END__';
+    const newConfigBlock = '// __CONFIG_START__\nconst JUDUL_DEFAULT = ' + JSON.stringify(configJudul) + ';\nconst SUBJUDUL_DEFAULT = ' + JSON.stringify(configSubJudul) + ';\nconst PASSWORD_DEFAULT = ' + JSON.stringify(PASSWORD_GURU) + ';\nconst TOKEN_DEFAULT = ' + JSON.stringify(configToken) + ';\nconst GOOGLE_SHEET_URL_DEFAULT = ' + JSON.stringify(configGoogleSheetUrl) + ';\nconst AKUN_GOOGLE_DEFAULT = ' + JSON.stringify(configAkunGoogle) + ';\nconst NAMA_FOLDER_DEFAULT = ' + JSON.stringify(configNamaFolder) + ';\nconst LINK_FOLDER_DEFAULT = ' + JSON.stringify(configLinkFolder) + ';\nconst DURASI_DEFAULT = ' + JSON.stringify(configDurasi) + ';\nconst JUMLAH_SOAL_DEFAULT = ' + JSON.stringify(configJumlahSoal) + ';\nconst ACAK_DEFAULT = ' + JSON.stringify(configAcak) + ';\nconst ACAK_OPSI_DEFAULT = ' + JSON.stringify(configAcakOpsi) + ';\nconst ENABLE_RESET_DEFAULT = ' + JSON.stringify(configEnableReset) + ';\nconst MAX_PELANGGARAN_DEFAULT = ' + JSON.stringify(configMaxPelanggaran) + ';\nconst NILAI_MAKSIMAL_DEFAULT = ' + JSON.stringify(configNilaiMaksimal) + ';\nconst NILAI_KKM_DEFAULT = ' + JSON.stringify(configNilaiKKM) + ';\nconst TAMPIL_NILAI_DEFAULT = ' + JSON.stringify(configTampilNilai) + ';\nconst CETAK_FONT_DEFAULT = ' + JSON.stringify(configCetakFont) + ';\nconst CETAK_KERTAS_DEFAULT = ' + JSON.stringify(configCetakKertas) + ';\nconst CETAK_UKURAN_FONT_DEFAULT = ' + JSON.stringify(configCetakUkuranFont) + ';\nconst CETAK_SPASI_DEFAULT = ' + JSON.stringify(configCetakSpasi) + ';\nconst CETAK_MARGIN_ATAS_DEFAULT = ' + JSON.stringify(configCetakMarginAtas) + ';\nconst CETAK_MARGIN_BAWAH_DEFAULT = ' + JSON.stringify(configCetakMarginBawah) + ';\nconst CETAK_MARGIN_KIRI_DEFAULT = ' + JSON.stringify(configCetakMarginKiri) + ';\nconst CETAK_MARGIN_KANAN_DEFAULT = ' + JSON.stringify(configCetakMarginKanan) + ';\nconst CETAK_KUNCI_DEFAULT = ' + JSON.stringify(configCetakKunci) + ';\nconst CETAK_ACAK_DEFAULT = ' + JSON.stringify(configCetakAcak) + ';\nconst SOAL_DEFAULT = ' + JSON.stringify(soalAktif) + ';\n// __CONFIG_END__';
     const newRuntimeConfigBlock = '// __RUNTIME_CONFIG_START__\nlet configDurasi = parseInt(localStorage.getItem(\'configDurasi\') || (typeof DURASI_DEFAULT !== \'undefined\' ? DURASI_DEFAULT : ' + configDurasi + '));\nlet configJumlahSoal = parseInt(localStorage.getItem(\'configJumlahSoal\') || (typeof JUMLAH_SOAL_DEFAULT !== \'undefined\' ? JUMLAH_SOAL_DEFAULT : ' + configJumlahSoal + '));\nlet configAcak = localStorage.getItem(\'configAcak\') !== null ? localStorage.getItem(\'configAcak\') === \'true\' : (typeof ACAK_DEFAULT !== \'undefined\' ? ACAK_DEFAULT : ' + configAcak + ');\nlet configAcakOpsi = localStorage.getItem(\'configAcakOpsi\') !== null ? localStorage.getItem(\'configAcakOpsi\') === \'true\' : (typeof ACAK_OPSI_DEFAULT !== \'undefined\' ? ACAK_OPSI_DEFAULT : ' + configAcakOpsi + ');\nlet configEnableReset = localStorage.getItem(\'configEnableReset\') !== null ? localStorage.getItem(\'configEnableReset\') === \'true\' : (typeof ENABLE_RESET_DEFAULT !== \'undefined\' ? ENABLE_RESET_DEFAULT : ' + configEnableReset + ');\nlet configMaxPelanggaran = parseInt(localStorage.getItem(\'configMaxPelanggaran\') || (typeof MAX_PELANGGARAN_DEFAULT !== \'undefined\' ? MAX_PELANGGARAN_DEFAULT : ' + configMaxPelanggaran + '));\nlet configNilaiMaksimal = parseInt(localStorage.getItem(\'configNilaiMaksimal\') || (typeof NILAI_MAKSIMAL_DEFAULT !== \'undefined\' ? NILAI_MAKSIMAL_DEFAULT : ' + configNilaiMaksimal + '));\nlet configNilaiKKM = parseInt(localStorage.getItem(\'configNilaiKKM\') || (typeof NILAI_KKM_DEFAULT !== \'undefined\' ? NILAI_KKM_DEFAULT : ' + configNilaiKKM + '));\nlet configTampilNilai = localStorage.getItem(\'configTampilNilai\') !== null ? localStorage.getItem(\'configTampilNilai\') !== \'false\' : (typeof TAMPIL_NILAI_DEFAULT !== \'undefined\' ? TAMPIL_NILAI_DEFAULT : ' + configTampilNilai + ');\nlet configCetakFont = localStorage.getItem(\'configCetakFont\') || (typeof CETAK_FONT_DEFAULT !== \'undefined\' ? CETAK_FONT_DEFAULT : ' + JSON.stringify(configCetakFont) + ');\nlet configCetakKertas = localStorage.getItem(\'configCetakKertas\') || (typeof CETAK_KERTAS_DEFAULT !== \'undefined\' ? CETAK_KERTAS_DEFAULT : ' + JSON.stringify(configCetakKertas) + ');\nlet configCetakUkuranFont = localStorage.getItem(\'configCetakUkuranFont\') || (typeof CETAK_UKURAN_FONT_DEFAULT !== \'undefined\' ? CETAK_UKURAN_FONT_DEFAULT : ' + JSON.stringify(configCetakUkuranFont) + ');\nlet configCetakSpasi = localStorage.getItem(\'configCetakSpasi\') || (typeof CETAK_SPASI_DEFAULT !== \'undefined\' ? CETAK_SPASI_DEFAULT : ' + JSON.stringify(configCetakSpasi) + ');\nlet configCetakMarginAtas = localStorage.getItem(\'configCetakMarginAtas\') || (typeof CETAK_MARGIN_ATAS_DEFAULT !== \'undefined\' ? CETAK_MARGIN_ATAS_DEFAULT : ' + JSON.stringify(configCetakMarginAtas) + ');\nlet configCetakMarginBawah = localStorage.getItem(\'configCetakMarginBawah\') || (typeof CETAK_MARGIN_BAWAH_DEFAULT !== \'undefined\' ? CETAK_MARGIN_BAWAH_DEFAULT : ' + JSON.stringify(configCetakMarginBawah) + ');\nlet configCetakMarginKiri = localStorage.getItem(\'configCetakMarginKiri\') || (typeof CETAK_MARGIN_KIRI_DEFAULT !== \'undefined\' ? CETAK_MARGIN_KIRI_DEFAULT : ' + JSON.stringify(configCetakMarginKiri) + ');\nlet configCetakMarginKanan = localStorage.getItem(\'configCetakMarginKanan\') || (typeof CETAK_MARGIN_KANAN_DEFAULT !== \'undefined\' ? CETAK_MARGIN_KANAN_DEFAULT : ' + JSON.stringify(configCetakMarginKanan) + ');\nlet configCetakKunci = localStorage.getItem(\'configCetakKunci\') || (typeof CETAK_KUNCI_DEFAULT !== \'undefined\' ? CETAK_KUNCI_DEFAULT : ' + JSON.stringify(configCetakKunci) + ');\nlet configCetakAcak = localStorage.getItem(\'configCetakAcak\') || (typeof CETAK_ACAK_DEFAULT !== \'undefined\' ? CETAK_ACAK_DEFAULT : ' + JSON.stringify(configCetakAcak) + ');\n// __RUNTIME_CONFIG_END__';
     html = html.replace(/\/\/ __CONFIG_START__[\s\S]*?\/\/ __CONFIG_END__/, () => newConfigBlock);
     html = html.replace(/\/\/ __RUNTIME_CONFIG_START__[\s\S]*?\/\/ __RUNTIME_CONFIG_END__/, () => newRuntimeConfigBlock);
